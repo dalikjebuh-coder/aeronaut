@@ -25,6 +25,7 @@ test('published game resolves its scripts, map workers, photos, models and audio
       await buildPages({outDir,basePath,token});
       const html=await readFile(join(outDir,'index.html'),'utf8');
       assert.ok(html.includes(`window.CESIUM_BASE_URL='${basePath}vendor/'`));
+      assert.match(html,/<meta name="referrer" content="no-referrer-when-downgrade">/, 'Cesium path-restricted tokens require the full HTTPS page referrer');
       for(const [,path] of html.matchAll(/(?:src|href)="(\/[^"#]+)"/g)){
         assert.ok(path.startsWith(basePath),path);
         await access(join(outDir,path.slice(basePath.length)));
