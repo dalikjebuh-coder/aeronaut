@@ -1,6 +1,8 @@
 # Sdílení Aeronautu přes GitHub Pages
 
-Příprava je hotová v projektu, nikoli publikovaná na internetu. Hra se sestavuje do `dist/`, včetně modelů, zvuků a Cesium knihoven. Po zveřejnění návštěvníci nepotřebují účet GitHub.
+Veřejná hra: **https://dalikjebuh-coder.github.io/aeronaut/**. Repozitář: **https://github.com/dalikjebuh-coder/aeronaut**.
+
+Hra se sestavuje do `dist/`, včetně modelů, zvuků a Cesium knihoven. Návštěvníci nepotřebují účet GitHub. Mapové připojení nasazené verze zajišťuje společný token z nastavení publikování.
 
 ## Publikování
 

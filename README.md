@@ -1,11 +1,11 @@
 # Aeronaut
 
-Lokální webový prototyp leteckého simulátoru vytvořený přímo v Codexu. Bez Macaly, účtu aplikace a serverové databáze.
+Webový letecký simulátor. Spustit hru: **https://dalikjebuh-coder.github.io/aeronaut/**. Bez účtu aplikace a serverové databáze.
 
 
 ## Sdílení jedním odkazem
 
-Projekt obsahuje sestavení a automatické publikování pro GitHub Pages. Postup včetně společného mapového připojení a omezení veřejného tokenu je v [docs/GITHUB-PAGES.md](docs/GITHUB-PAGES.md). Samotná přítomnost těchto souborů neznamená, že je hra už zveřejněná.
+Kolegové otevřou veřejný odkaz v prohlížeči na telefonu nebo PC. Mapový token nasazené verze se předává automaticky přes nastavení publikování. Postup pro aktualizace, mapové připojení a omezení veřejného tokenu je v [docs/GITHUB-PAGES.md](docs/GITHUB-PAGES.md).
 
 ## Spuštění
 
