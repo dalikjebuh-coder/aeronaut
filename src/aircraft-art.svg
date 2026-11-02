@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg">
+<defs>
+  <linearGradient id="metal" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#c7d4de"/><stop offset=".48" stop-color="#6f8596"/><stop offset=".52" stop-color="#abbac5"/><stop offset="1" stop-color="#3b4d60"/></linearGradient>
+  <linearGradient id="wing-metal" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#a3b8c6"/><stop offset="1" stop-color="#34495c"/></linearGradient>
+  <linearGradient id="glass" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#8bc7d9"/><stop offset="1" stop-color="#102635"/></linearGradient>
+</defs>
+<symbol id="highWing" viewBox="0 0 400 240">
+  <g stroke="#c0d0dc" stroke-width="1" stroke-linejoin="round">
+    <path fill="url(#wing-metal)" d="M164 110 140 21 166 19 213 108 213 134 166 221 140 218 164 132Z"/>
+    <path fill="url(#wing-metal)" d="m71 115-14-39 18-2 31 40v12l-31 41-18-2 14-39Z"/>
+    <path fill="url(#metal)" d="M53 118c35-7 82-9 126-13l62 3c34 1 57 6 64 13-8 9-27 13-64 15l-62 3c-44-6-91-8-126-13Z"/>
+    <path fill="url(#glass)" d="m210 109 30 2 11 10-11 11-30 2 6-13Z"/>
+    <path d="m107 121-48-1 2-5 42 1ZM178 33l16 72M176 208l18-70" fill="none" stroke="#506778"/>
+    <path d="M307 93v56" stroke="#d8d7bd" stroke-width="3"/>
+    <path d="M305 104v34" stroke="#f0c66b" stroke-width="2"/>
+    <path d="M123 120h30M182 120h18" stroke="#293b4d"/>
+  </g>
+</symbol>
+<symbol id="lowWing" viewBox="0 0 400 240">
+  <g stroke="#bfd0dd" stroke-width="1" stroke-linejoin="round">
+    <path fill="url(#wing-metal)" d="m153 111-44-85 30-3 89 88v20l-89 88-30-3 44-85Z"/>
+    <path fill="url(#wing-metal)" d="m69 112-33-45 20-3 64 48v19l-64 48-20-3 33-45Z"/>
+    <rect x="84" y="92" width="54" height="13" rx="6" fill="url(#metal)"/><rect x="84" y="137" width="54" height="13" rx="6" fill="url(#metal)"/>
+    <path fill="url(#metal)" d="M31 118c53-7 114-13 179-13h64c29 0 62 6 80 16-18 10-51 16-80 16h-64c-65 0-126-6-179-13Z"/>
+    <path fill="url(#glass)" d="m285 109 18 4 10 8-10 9-18 3 3-12Z"/>
+    <path d="M178 109 137 44M178 133l-41 65M66 121h198" stroke="#425d72" fill="none"/>
+    <path d="M211 113h8m8 0h8m8 0h8m8 0h8M211 130h8m8 0h8m8 0h8m8 0h8" stroke="#193044" stroke-width="3"/>
+    <path d="m44 119 53-7v18l-53-7" fill="#40566d"/>
+  </g>
+</symbol>
+<symbol id="airliner" viewBox="0 0 400 240">
+  <g stroke="#c1d2dd" stroke-width="1" stroke-linejoin="round">
+    <path fill="url(#wing-metal)" d="m157 111-53-94 21-9 116 103v20L125 232l-21-9 53-92Z"/>
+    <path fill="url(#wing-metal)" d="M59 112 24 62l22-3 74 53v19l-74 53-22-3 35-50Z"/>
+    <rect x="166" y="63" width="61" height="18" rx="8" fill="url(#metal)"/><rect x="166" y="160" width="61" height="18" rx="8" fill="url(#metal)"/>
+    <path fill="url(#metal)" d="M20 118c52-8 101-13 170-13h100c35 0 69 5 89 16-20 11-54 16-89 16H190c-69 0-118-5-170-13Z"/>
+    <path fill="url(#glass)" d="m335 110 17 4 9 7-9 7-17 4 4-11Z"/>
+    <path d="M110 115h204M110 127h204" stroke="#23485b" stroke-width="3" stroke-dasharray="3 5"/>
+    <path d="m35 120 60-8v18l-60-8" fill="#364c62"/>
+    <path d="m191 108-66-83m66 109-66 82" stroke="#486178" fill="none"/>
+  </g>
+</symbol>
+<symbol id="fighter" viewBox="0 0 400 240">
+  <g stroke="#b4c8d6" stroke-width="1" stroke-linejoin="round">
+    <path fill="url(#wing-metal)" d="M83 109 71 35l35-4 86 78v24l-86 77-35-3 12-74Z"/>
+    <path fill="url(#wing-metal)" d="M73 105 39 62l25-2 61 45v31l-61 45-25-2 34-43Z"/>
+    <path fill="url(#metal)" d="m41 108 79-3 67-11 77 9 99 18-99 18-77 9-67-11-79-3Z"/>
+    <path fill="#354b5b" d="m119 106 74-8 55 13-62 1-58 6m-9 18 74 8 55-13-62-1-58-6"/>
+    <path fill="url(#glass)" d="M228 113c23-5 40-1 56 8-16 9-33 13-56 8l-8-8Z"/>
+    <path d="M49 109v24m7-24v24M190 101l20 8m-20 32 20-8" stroke="#1f3548" stroke-width="3"/>
+    <path fill="#658399" d="m73 118 73-3-8 6 8 6-73-3Z"/>
+    <path d="M95 45 153 97M95 197l58-52" stroke="#4d667b"/>
+  </g>
+</symbol>
+</svg>

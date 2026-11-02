@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="cs">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Aeronaut · Tři návrhy výběru mise</title>
+  <meta name="color-scheme" content="dark light">
+  <link rel="stylesheet" href="styles.css">
+  <script type="module" src="preview.js"></script>
+</head>
+<body>
+  <div class="review-toolbar">
+    <a class="return-game" href="/" aria-label="Zpět do hry">← Aeronaut</a>
+    <nav class="design-tabs" aria-label="Návrh vzhledu">
+      <button data-design="horizon" aria-pressed="true"><b>A</b><span>Horizont</span></button>
+      <button data-design="atlas" aria-pressed="false"><b>B</b><span>Atlas</span></button>
+      <button data-design="vector" aria-pressed="false"><b>C</b><span>Vektor</span></button>
+    </nav>
+    <span class="preview-badge">Návrhy vzhledu</span>
+  </div>
+  <div class="review-intro"><div><p id="designEyebrow">A / HORIZONT</p><h1 id="designTitle">Krajina hraje hlavní roli.</h1><p id="designDescription">Velký obraz, výrazné písmo a jen to, co potřebuješ před startem.</p></div><span id="designRecommendation">Doporučený směr</span></div>
+  <main id="designStage" class="game-stage theme-horizon" aria-label="Náhled obrazovky výběru mise">
+    <img class="scene-photo" data-hero-image alt="" fetchpriority="high">
+    <div class="scene-shade"></div><div class="vector-grid"></div>
+    <header class="game-header"><a class="game-brand" href="/" aria-label="Aeronaut"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="m16 3 3 11 10 6v3l-10-3v6l4 3-7-2-7 2 4-3v-6L3 23v-3l10-6z"/></svg>AERONAUT</a><nav aria-label="Kroky přípravy"><span>Letadlo</span><i>›</i><span>Režim</span><i>›</i><strong>Mise</strong></nav><span class="header-aircraft"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="m16 3 3 11 10 6v3l-10-3v6l4 3-7-2-7 2 4-3v-6L3 23v-3l10-6z"/></svg>Hornoplošník</span></header>
+    <section class="mission-rail" aria-labelledby="missionListTitle">
+      <div class="rail-heading"><h2 id="missionListTitle">Vyber misi.</h2><span id="missionCount"></span></div>
+      <div class="rail-filter"><label class="sr-only" for="missionType">Typ mise</label><select id="missionType"><option value="all">Všechny mise</option><option value="time">Časovky</option><option value="sightseeing">Objevování</option><option value="landing">Přistání</option><option value="lowflight">Nízké lety</option></select><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 10 5 5 5-5"/></svg></div>
+      <div id="missionList" class="mission-list" role="group" aria-label="Mise"></div>
+      <div class="rail-footer"><span class="rail-key">↑ ↓</span> Výběr mise</div>
+    </section>
+    <section class="mission-hero" aria-labelledby="selectedTitle">
+      <div class="atlas-photo"><img data-hero-image alt=""></div>
+      <div class="hero-topline"><span id="selectedPlace"></span><span class="hero-type" id="selectedType"></span></div>
+      <div class="hero-body">
+        <div class="mission-copy"><span class="hero-kicker" id="selectedCountry"></span><h2 id="selectedTitle"></h2><p id="selectedDescription"></p></div>
+        <div class="route-preview" aria-label="Náhled trasy"><span>Trasa letu</span><div id="routeMap"></div></div>
+        <div class="mission-controls">
+          <div class="quick-facts"><span><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1 1m12 12 1 1M5 19l1-1M18 6l1-1"/></svg><span id="selectedConditions"></span></span><span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19 9 5l6 14 5-9"/><circle cx="4" cy="19" r="1"/><circle cx="20" cy="10" r="1"/></svg><span id="selectedLength"></span></span></div>
+          <fieldset class="difficulty"><legend>Obtížnost</legend><div><button type="button" data-difficulty="easy" aria-pressed="true">Lehká</button><button type="button" data-difficulty="normal" aria-pressed="false">Střední</button><button type="button" data-difficulty="hard" aria-pressed="false">Těžká</button></div></fieldset>
+          <button id="startPreview" class="start-button" type="button">Vzlétnout <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h16m-6-6 6 6-6 6"/></svg></button>
+        </div>
+      </div>
+    </section>
+    <div class="game-corner-mark" aria-hidden="true">AERONAUT / WORLD FLIGHT</div>
+  </main>
+  <footer class="review-footer"><p id="reviewHint">Vyzkoušej výběr mise a obtížnosti. Toto je samostatný náhled vzhledu.</p><button id="chooseDesign" type="button">Vybrat návrh A <span>↗</span></button></footer>
+  <div id="previewToast" class="preview-toast" role="status" hidden></div>
+  <details class="photo-credits"><summary>Zdroje fotografií</summary><div id="photoCredits"></div></details>
+</body>
+</html>

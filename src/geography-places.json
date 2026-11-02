@@ -1,0 +1,712 @@
+[
+  {
+    "id": "cs:4153",
+    "name": "Brno",
+    "lat": 49.19527778,
+    "lon": 16.60833333,
+    "text": "Brno (německy Brünn) je statutární město, počtem obyvatel i rozlohou druhé největší město v České republice, největší město na Moravě a bývalé hlavní město Moravy. Je sídlem Jihomoravského kraje, v jehož centrální části tvoří samostatný okres Brno-město. Město o rozloze 230,18 km² má přibližně 403 tisíc obyvatel a v jeho metropolitní oblasti žije asi 700 tisíc obyvatel. Brnem protékají řeky Svratka a Svitava, kter…",
+    "url": "https://cs.wikipedia.org/wiki/Brno",
+    "language": "cs",
+    "source": "Wikipedie",
+    "license": "https://creativecommons.org/licenses/by-sa/4.0/",
+    "photo": {
+      "src": "/images/places/wiki-cs-4153.jpg",
+      "file": "Brno_Spilberk_vyhled_Petrov.jpg",
+      "url": "https://commons.wikimedia.org/wiki/File:Brno_Spilberk_vyhled_Petrov.jpg",
+      "credit": "JiriMatejicek",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/"
+    },
+    "collection": "Brno a okolí",
+    "facts": [
+      "Městem protékají Svratka a Svitava.",
+      "Brno je historickou metropolí Moravy."
+    ]
+  },
+  {
+    "id": "cs:6728",
+    "name": "Pražský hrad",
+    "lat": 50.09,
+    "lon": 14.4,
+    "text": "Pražský hrad je nejvýznamnější český hrad (původně raně středověké hradiště) stojící na skalnatém ostrohu nad řekou Vltavou v centru Prahy, na vrchu Opyš. Od 9. století býval sídlem českých knížat, později králů a od roku 1918 je sídlem prezidenta republiky. Dvakrát v dějinách se stal hlavní rezidencí císaře Svaté říše římské. Postupnými přístavbami a úpravami vznikl z hradiště založeného v 9. století, se svými ro…",
+    "url": "https://cs.wikipedia.org/wiki/Pra%C5%BEsk%C3%BD_hrad",
+    "language": "cs",
+    "source": "Wikipedie",
+    "license": "https://creativecommons.org/licenses/by-sa/4.0/",
+    "photo": {
+      "src": "/images/places/wiki-cs-6728.jpg",
+      "file": "Hradschin_Prag.jpg",
+      "url": "https://commons.wikimedia.org/wiki/File:Hradschin_Prag.jpg",
+      "credit": "Stefan Bauer, http://www.ferras.at",
+      "license": "CC BY-SA 2.5",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.5",
+      "remote": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d4/Hradschin_Prag.jpg/960px-Hradschin_Prag.jpg?utm_source=cs.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+    },
+    "collection": "Praha",
+    "facts": [
+      "Nad Vltavou stojí sídlo českých knížat, králů a prezidentů."
+    ]
+  },
+  {
+    "id": "cs:19618",
+    "name": "Vila Tugendhat",
+    "lat": 49.20722222,
+    "lon": 16.61583333,
+    "text": "Vila Tugendhat v Brně je ojedinělým projevem funkcionalistického a internacionalistického uvažování německého architekta Ludwiga Miese van der Rohe, který v roce 1928 vypracoval návrh stavby na zakázku manželů Grety (1903–1970) a Fritze (1895–1958) Tugendhatových. Grete, rozená Löw-Beerová a prvně provdaná Weissová, byla jedinou dcerou významného moravského textilního průmyslníka Alfreda Löw-Beera (1872–1939). Par…",
+    "url": "https://cs.wikipedia.org/wiki/Vila_Tugendhat",
+    "language": "cs",
+    "source": "Wikipedie",
+    "license": "https://creativecommons.org/licenses/by-sa/4.0/",
+    "photo": {
+      "src": "/images/places/wiki-cs-19618.jpg",
+      "file": "Villa_Tugendhat,_Brno.jpg",
+      "url": "https://commons.wikimedia.org/wiki/File:Villa_Tugendhat,_Brno.jpg",
+      "credit": "Thomas Ledl",
+      "license": "CC BY 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0",
+      "remote": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/45/Villa_Tugendhat%2C_Brno.jpg/960px-Villa_Tugendhat%2C_Brno.jpg?utm_source=cs.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+    },
+    "collection": "Brno a okolí",
+    "facts": [
+      "Funkcionalistickou vilu navrhl Ludwig Mies van der Rohe pro rodinu Tugendhatových."
+    ]
+  },
+  {
+    "id": "cs:26471",
+    "name": "Veveří (hrad)",
+    "lat": 49.256667,
+    "lon": 16.461667,
+    "text": "Veveří (německy Eichhorn) je hrad na západě brněnské městské části Bystrc, zhruba 12 kilometrů severozápadně od centra Brna na skalnatém ostrohu nad Brněnskou přehradou, kterou napájí řeka Svratka. Jde o jeden z nejrozsáhlejších a nejstarších hradních areálů nejen na Moravě, ale i v celé České republice. Stranou od hradu, při příjezdové cestě k západní vstupní bráně se nalézá kaple Matky Boží z konce 12. století.…",
+    "url": "https://cs.wikipedia.org/wiki/Veve%C5%99%C3%AD_%28hrad%29",
+    "language": "cs",
+    "source": "Wikipedie",
+    "license": "https://creativecommons.org/licenses/by-sa/4.0/",
+    "photo": {
+      "src": "/images/places/wiki-cs-26471.jpg",
+      "file": "Hrad_Veveří_-_letecký_pohled_05_upraveny.jpg",
+      "url": "https://commons.wikimedia.org/wiki/File:Hrad_Veve%C5%99%C3%AD_-_leteck%C3%BD_pohled_05_upraveny.jpg",
+      "credit": "Dominik Matus",
+      "license": "CC BY-SA 3.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+      "remote": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/ab/Hrad_Veve%C5%99%C3%AD_-_leteck%C3%BD_pohled_05_upraveny.jpg/960px-Hrad_Veve%C5%99%C3%AD_-_leteck%C3%BD_pohled_05_upraveny.jpg?utm_source=cs.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+    },
+    "collection": "Brno a okolí",
+    "facts": [
+      "Rozsáhlý moravský hrad stojí na skalnatém ostrohu nad Brněnskou přehradou."
+    ]
+  },
+  {
+    "id": "cs:27634",
+    "name": "Brněnská přehrada",
+    "lat": 49.24062222,
+    "lon": 16.50764889,
+    "text": "Brněnská přehrada (v hantecu Prýgl nebo Prygl) nebo vodní nádrž Brno, zastarale též Kníničská přehrada či vodní nádrž Kníničky, je rozlohou největší vodní dílo na řece Svratce. Vznikla vystavěním hráze na 56. říčním kilometru Svratky a zatopením údolí s obcí Kníničky. Původně sloužila jako zásobárna vody pro Brno. Pro pitnou vodu se nyní využívá vody z Vírské přehrady a vody z vrtů v Březové. V současnosti přehrad…",
+    "url": "https://cs.wikipedia.org/wiki/Brn%C4%9Bnsk%C3%A1_p%C5%99ehrada",
+    "language": "cs",
+    "source": "Wikipedie",
+    "license": "https://creativecommons.org/licenses/by-sa/4.0/",
+    "photo": {
+      "src": "/images/places/wiki-cs-27634.jpg",
+      "file": "Brněnská_přehrada.JPG",
+      "url": "https://commons.wikimedia.org/wiki/File:Brn%C4%9Bnsk%C3%A1_p%C5%99ehrada.JPG",
+      "credit": "Dezidor",
+      "license": "Public domain",
+      "licenseUrl": "",
+      "remote": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/69/Brn%C4%9Bnsk%C3%A1_p%C5%99ehrada.JPG/960px-Brn%C4%9Bnsk%C3%A1_p%C5%99ehrada.JPG?utm_source=cs.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+    },
+    "collection": "Brno a okolí",
+    "facts": [
+      "Vodní nádrž na Svratce vznikla zatopením údolí s obcí Kníničky."
+    ]
+  },
+  {
+    "id": "cs:31264",
+    "name": "Karlův most",
+    "lat": 50.08638889,
+    "lon": 14.41194444,
+    "text": "Karlův most (německy Karlsbrücke, původně Kamenný most) je nejstarší stojící most přes řeku Vltavu v Praze a druhý nejstarší dochovaný most v Česku. Po pražském mostě Juditině, kamenném mostě v Písku a mostě v Roudnici nad Labem jde v Čechách v pořadí o čtvrtou kamennou mostní stavbu. Karlův most nahradil předchozí Juditin most, stržený roku 1342 při jarním tání ledů. Stavba nového mostu začala v roce 1357 pod záš…",
+    "url": "https://cs.wikipedia.org/wiki/Karl%C5%AFv_most",
+    "language": "cs",
+    "source": "Wikipedie",
+    "license": "https://creativecommons.org/licenses/by-sa/4.0/",
+    "photo": {
+      "src": "/images/places/wiki-cs-31264.jpg",
+      "file": "Prague_07-2016_View_from_Petrinska_Tower_img2.jpg",
+      "url": "https://commons.wikimedia.org/wiki/File:Prague_07-2016_View_from_Petrinska_Tower_img2.jpg",
+      "credit": "A.Savin",
+      "license": "FAL",
+      "licenseUrl": "http://artlibre.org/licence/lal/en",
+      "remote": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/20/Prague_07-2016_View_from_Petrinska_Tower_img2.jpg/960px-Prague_07-2016_View_from_Petrinska_Tower_img2.jpg?utm_source=cs.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+    },
+    "collection": "Praha",
+    "facts": [
+      "Kamenný most překlenuje Vltavu.",
+      "Jeho stavba začala roku 1357."
+    ]
+  },
+  {
+    "id": "cs:41741",
+    "name": "Vyšehrad",
+    "lat": 50.06442719,
+    "lon": 14.41764421,
+    "text": "Vyšehrad je historické hradiště, hrad a pevnost v Praze, na skále nad pravým břehem řeky Vltavy na jižním okraji historického města, ve čtvrti Vyšehrad. Na Vyšehradském hřbitově se Slavínem u kostela sv. Petra a Pavla jsou pochovány významné české osobnosti, nachází se zde i nejstarší pražská rotunda sv. Martina. Dnes parkově upravený a veřejně přístupný areál je od roku 1962 národní kulturní památkou. K Vyšehradu…",
+    "url": "https://cs.wikipedia.org/wiki/Vy%C5%A1ehrad",
+    "language": "cs",
+    "source": "Wikipedie",
+    "license": "https://creativecommons.org/licenses/by-sa/4.0/",
+    "photo": {
+      "src": "/images/places/wiki-cs-41741.jpg",
+      "file": "Parník_Vyšehrad_pod_Vyšehradem.jpg",
+      "url": "https://commons.wikimedia.org/wiki/File:Parn%C3%ADk_Vy%C5%A1ehrad_pod_Vy%C5%A1ehradem.jpg",
+      "credit": "Stanislav Jelen",
+      "license": "CC BY-SA 3.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+      "remote": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f1/Parn%C3%ADk_Vy%C5%A1ehrad_pod_Vy%C5%A1ehradem.jpg/960px-Parn%C3%ADk_Vy%C5%A1ehrad_pod_Vy%C5%A1ehradem.jpg?utm_source=cs.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+    },
+    "collection": "Praha",
+    "facts": [
+      "Pevnost stojí na skále nad Vltavou.",
+      "Na místním hřbitově odpočívají významné české osobnosti."
+    ]
+  },
+  {
+    "id": "cs:81686",
+    "name": "Katedrála svatého Petra a Pavla",
+    "lat": 49.19097222,
+    "lon": 16.60736111,
+    "text": "Katedrála svatého Petra a Pavla (zkráceně Petrov) je sídelním kostelem biskupa brněnské diecéze. Nachází se v Brně na vrchu Petrov v městské části Brno-střed v jihozápadní části katastrálního území Město Brno. Je národní kulturní památkou, patří k nejvýznamnějším architektonickým památkám jižní Moravy a také mezi nejvýraznější brněnské dominanty (mj. je vyobrazena na české desetikoruně). Obě věže jsou vysoké 84 me…",
+    "url": "https://cs.wikipedia.org/wiki/Katedr%C3%A1la_svat%C3%A9ho_Petra_a_Pavla",
+    "language": "cs",
+    "source": "Wikipedie",
+    "license": "https://creativecommons.org/licenses/by-sa/4.0/",
+    "photo": {
+      "src": "/images/places/wiki-cs-81686.jpg",
+      "file": "Brno,_katedrála_sv._Petra_a_Pavla.jpg",
+      "url": "https://commons.wikimedia.org/wiki/File:Brno,_katedr%C3%A1la_sv._Petra_a_Pavla.jpg",
+      "credit": "Michal Klajban",
+      "license": "CC BY-SA 3.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+      "remote": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/83/Brno%2C_katedr%C3%A1la_sv._Petra_a_Pavla.jpg/960px-Brno%2C_katedr%C3%A1la_sv._Petra_a_Pavla.jpg?utm_source=cs.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+    },
+    "collection": "Brno a okolí",
+    "facts": [
+      "Petrov je výraznou dominantou Brna.",
+      "Jeho katedrálu najdeš i na české desetikoruně."
+    ]
+  },
+  {
+    "id": "cs:82370",
+    "name": "Petřín",
+    "lat": 50.08166667,
+    "lon": 14.39444444,
+    "text": "Petřín (německy Laurenziberg nebo také Laurenzberg, latinsky Petrin) je 331 m vysoký kopec v centru Prahy. Na jeho vrcholu stojí Petřínská rozhledna a mnoho jiných objektů. Samotný vrchol se nachází v areálu bašty sv. Vavřince. Na Petříně najdeme skály zejména z pískovce.",
+    "url": "https://cs.wikipedia.org/wiki/Pet%C5%99%C3%ADn",
+    "language": "cs",
+    "source": "Wikipedie",
+    "license": "https://creativecommons.org/licenses/by-sa/4.0/",
+    "photo": {
+      "src": "/images/places/wiki-cs-82370.jpg",
+      "file": "Petrin_Praha.jpg",
+      "url": "https://commons.wikimedia.org/wiki/File:Petrin_Praha.jpg",
+      "credit": "Ludek",
+      "license": "CC BY-SA 3.0",
+      "licenseUrl": "http://creativecommons.org/licenses/by-sa/3.0/",
+      "remote": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/4b/Petrin_Praha.jpg/960px-Petrin_Praha.jpg?utm_source=cs.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+    },
+    "collection": "Praha",
+    "facts": [
+      "Kopec v centru Prahy dosahuje 331 m nad mořem.",
+      "Na vrcholu stojí Petřínská rozhledna."
+    ]
+  },
+  {
+    "id": "cs:83709",
+    "name": "Lednice (zámek)",
+    "lat": 48.801389,
+    "lon": 16.805556,
+    "text": "Zámek Lednice (německy das Schloss Eisgrub) se nachází v obci Lednice na pravém břehu Dyje, přibližně 12 km východně od Mikulova, v Jihomoravském kraji. Zámek s rozlehlou zahradou patří mezi nejkrásnější komplexy v České republice. Lednické panství získali na přelomu 13. a 14. století Lichtenštejnové a patřilo jim bezmála 700 let. Dnešní podobu získal zámek při rozsáhlé rekonstrukci z poloviny 19. století ve slohu…",
+    "url": "https://cs.wikipedia.org/wiki/Lednice_%28z%C3%A1mek%29",
+    "language": "cs",
+    "source": "Wikipedie",
+    "license": "https://creativecommons.org/licenses/by-sa/4.0/",
+    "photo": {
+      "src": "/images/places/wiki-cs-83709.jpg",
+      "file": "Lednice_(Eisgrub)_-_zámek.JPG",
+      "url": "https://commons.wikimedia.org/wiki/File:Lednice_(Eisgrub)_-_z%C3%A1mek.JPG",
+      "credit": "Pudelek (Marcin Szala)",
+      "license": "CC BY-SA 3.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+      "remote": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/5e/Lednice_%28Eisgrub%29_-_z%C3%A1mek.JPG/960px-Lednice_%28Eisgrub%29_-_z%C3%A1mek.JPG?utm_source=cs.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+    },
+    "collection": "Jižní Morava",
+    "facts": [
+      "Lednické panství patřilo Lichtenštejnům téměř 700 let."
+    ]
+  },
+  {
+    "id": "cs:146828",
+    "name": "Hvězdárna a planetárium Brno",
+    "lat": 49.2046,
+    "lon": 16.5838,
+    "text": "Hvězdárna a planetárium Brno je příspěvková organizace statutárního města Brna, jejíž historie sahá do 50. let 20. století. Tato kulturně-vzdělávací instituce, která v sobě spojuje hvězdárnu a planetárium, zprovozněné v roce 1954, sídlí v areálu uprostřed parku na kopci Kraví hora na severozápadě městské části Brno-střed v nadmořské výšce 305 m n. m. Vrchol kopule planetária, který se nachází v nadmořské výšce 318…",
+    "url": "https://cs.wikipedia.org/wiki/Hv%C4%9Bzd%C3%A1rna_a_planet%C3%A1rium_Brno",
+    "language": "cs",
+    "source": "Wikipedie",
+    "license": "https://creativecommons.org/licenses/by-sa/4.0/",
+    "photo": {
+      "src": "/images/places/wiki-cs-146828.jpg",
+      "file": "Hvězdárna_a_planetárium_Brno_001.jpg",
+      "url": "https://commons.wikimedia.org/wiki/File:Hv%C4%9Bzd%C3%A1rna_a_planet%C3%A1rium_Brno_001.jpg",
+      "credit": "Hvězdárna a planetárium Brno",
+      "license": "CC BY-SA 3.0 cz",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0/cz/deed.en",
+      "remote": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a4/Hv%C4%9Bzd%C3%A1rna_a_planet%C3%A1rium_Brno_001.jpg/960px-Hv%C4%9Bzd%C3%A1rna_a_planet%C3%A1rium_Brno_001.jpg?utm_source=cs.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+    },
+    "collection": "Brno a okolí",
+    "facts": [
+      "Hvězdárna a planetárium na Kraví hoře byly otevřeny v roce 1954."
+    ]
+  },
+  {
+    "id": "cs:253992",
+    "name": "Brněnské výstaviště",
+    "lat": 49.1875,
+    "lon": 16.57916667,
+    "text": "Brněnské výstaviště je český výstavní areál, rozkládající se zhruba 2 km zjz. od centra Brna na levém břehu řeky Svratky v městské části Brno-střed, v katastrálním území Pisárky. Vlastníkem areálu je společnost Veletrhy Brno, která zde celoročně provozuje veletrhy, výstavy, přehlídky, koncerty a různé další akce. V současné době je areál výstaviště chráněn jako kulturní památka.",
+    "url": "https://cs.wikipedia.org/wiki/Brn%C4%9Bnsk%C3%A9_v%C3%BDstavi%C5%A1t%C4%9B",
+    "language": "cs",
+    "source": "Wikipedie",
+    "license": "https://creativecommons.org/licenses/by-sa/4.0/",
+    "photo": {
+      "src": "/images/places/wiki-cs-253992.jpg",
+      "file": "Výstaviště_z_výšky_2.jpg",
+      "url": "https://commons.wikimedia.org/wiki/File:V%C3%BDstavi%C5%A1t%C4%9B_z_v%C3%BD%C5%A1ky_2.jpg",
+      "credit": "BíláVrána",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "remote": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/4b/V%C3%BDstavi%C5%A1t%C4%9B_z_v%C3%BD%C5%A1ky_2.jpg/960px-V%C3%BDstavi%C5%A1t%C4%9B_z_v%C3%BD%C5%A1ky_2.jpg?utm_source=cs.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+    },
+    "collection": "Brno a okolí",
+    "facts": [
+      "Veletržní areál v Pisárkách leží na levém břehu Svratky.",
+      "Je chráněnou kulturní památkou."
+    ]
+  },
+  {
+    "id": "cs:315323",
+    "name": "Stará radnice (Brno)",
+    "lat": 49.19305556,
+    "lon": 16.60833333,
+    "text": "Stará radnice v Brně je bývalá radniční budova a nejstarší světská stavba ve městě. Nachází se v historickém centru Brna v katastrálním území Město Brno, mezi Zelným trhem a náměstím Svobody na Radnické ulici. Počátky stavby sahají do 13. století. Jako radnice stavba sloužila až do roku 1935, poté radní přesídlili do nedalekého nově zrekonstruovaného Zemského domu, kterému se proto začalo říkat Nová radnice. V sou…",
+    "url": "https://cs.wikipedia.org/wiki/Star%C3%A1_radnice_%28Brno%29",
+    "language": "cs",
+    "source": "Wikipedie",
+    "license": "https://creativecommons.org/licenses/by-sa/4.0/",
+    "photo": {
+      "src": "/images/places/wiki-cs-315323.jpg",
+      "file": "Brno_Old_Town_Hall-01.jpg",
+      "url": "https://commons.wikimedia.org/wiki/File:Brno_Old_Town_Hall-01.jpg",
+      "credit": "Radler59 (talk)",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "remote": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/94/Brno_Old_Town_Hall-01.jpg/960px-Brno_Old_Town_Hall-01.jpg?utm_source=cs.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+    },
+    "collection": "Brno a okolí",
+    "facts": [
+      "Nejstarší světská stavba Brna.",
+      "Radní zde sídlili až do roku 1935."
+    ]
+  },
+  {
+    "id": "cs:337702",
+    "name": "Špilberk",
+    "lat": 49.194444,
+    "lon": 16.598889,
+    "text": "Špilberk (německy Spielberg, v hantecu Špilas) je hrad a pevnost tvořící dominantu města Brna. Nachází se na vrcholu stejnojmenného kopce, který leží v městské části Brno-střed, na západě katastrálního území Město Brno. Hrad byl založen ve druhé polovině 13. století moravským markrabětem (a později i českým králem) Přemyslem Otakarem II. a během staletí procházel mnoha výraznými proměnami. Z předního královského h…",
+    "url": "https://cs.wikipedia.org/wiki/%C5%A0pilberk",
+    "language": "cs",
+    "source": "Wikipedie",
+    "license": "https://creativecommons.org/licenses/by-sa/4.0/",
+    "photo": {
+      "src": "/images/places/wiki-cs-337702.jpg",
+      "file": "Hrad_Špilberk_(Brno),_Brno_-_střed_208,_Brno.JPG",
+      "url": "https://commons.wikimedia.org/wiki/File:Hrad_%C5%A0pilberk_(Brno),_Brno_-_st%C5%99ed_208,_Brno.JPG",
+      "credit": "Michal Kmínek",
+      "license": "CC BY-SA 3.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+      "remote": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/ca/Hrad_%C5%A0pilberk_%28Brno%29%2C_Brno_-_st%C5%99ed_208%2C_Brno.JPG/960px-Hrad_%C5%A0pilberk_%28Brno%29%2C_Brno_-_st%C5%99ed_208%2C_Brno.JPG?utm_source=cs.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+    },
+    "collection": "Brno a okolí",
+    "facts": [
+      "Hrad založil ve 13. století Přemysl Otakar II.",
+      "Později se proměnil v pevnost."
+    ]
+  },
+  {
+    "id": "cs:344195",
+    "name": "Macocha",
+    "lat": 49.3732361,
+    "lon": 16.7298174,
+    "text": "Propast Macocha je nejznámější propast v oblasti Moravského krasu a součást komplexu Punkevních jeskyní. Hloubka suché části propasti je 138,4 m, na jejím dně se nachází Horní (hloubka 11 m) a Dolní macošské jezírko (hloubka min. 50 m). Propast se nachází v katastrálním území obce Vilémovice.",
+    "url": "https://cs.wikipedia.org/wiki/Macocha",
+    "language": "cs",
+    "source": "Wikipedie",
+    "license": "https://creativecommons.org/licenses/by-sa/4.0/",
+    "photo": {
+      "src": "/images/places/wiki-cs-344195.jpg",
+      "file": "Propast_Macocha_01.jpg",
+      "url": "https://commons.wikimedia.org/wiki/File:Propast_Macocha_01.jpg",
+      "credit": "Doronenko",
+      "license": "CC BY-SA 3.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+      "remote": "https://upload.wikimedia.org/wikipedia/commons/1/1f/Propast_Macocha_01.jpg?utm_source=cs.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled"
+    },
+    "collection": "Brno a okolí",
+    "facts": [
+      "Suchá část propasti je hluboká 138,4 m.",
+      "Na dně leží dvě jezírka."
+    ]
+  },
+  {
+    "id": "cs:354286",
+    "name": "Mikulov (zámek)",
+    "lat": 48.806818,
+    "lon": 16.636702,
+    "text": "Zámek Mikulov je barokní zámek, který se nachází v těsné blízkosti centra města Mikulov v okrese Břeclav. Stojí na skalnatém kopci zvaném Zámecký vrch a tvoří jednu z dominant města. Prostory zámku slouží jako stálá expozice Regionálního muzea v Mikulově i jako příležitostné dějiště kulturních akcí, jako je každoroční vinobraní. Na místě mikulovského zámku původně stál kamenný románský hrad z dob Přemyslovců. Ve 1…",
+    "url": "https://cs.wikipedia.org/wiki/Mikulov_%28z%C3%A1mek%29",
+    "language": "cs",
+    "source": "Wikipedie",
+    "license": "https://creativecommons.org/licenses/by-sa/4.0/",
+    "photo": {
+      "src": "/images/places/wiki-cs-354286.jpg",
+      "file": "2019-11-06_13-04-05_Pentax_JH.jpg",
+      "url": "https://commons.wikimedia.org/wiki/File:2019-11-06_13-04-05_Pentax_JH.jpg",
+      "credit": "Juhele_CZ",
+      "license": "CC BY-SA 2.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0",
+      "remote": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/bc/2019-11-06_13-04-05_Pentax_JH.jpg/960px-2019-11-06_13-04-05_Pentax_JH.jpg?utm_source=cs.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+    },
+    "collection": "Jižní Morava",
+    "facts": [
+      "Barokní zámek na Zámeckém vrchu ukrývá expozice regionálního muzea."
+    ]
+  },
+  {
+    "id": "cs:23540",
+    "name": "Mount Everest",
+    "lat": 27.98805556,
+    "lon": 86.925,
+    "text": "Mount Everest (nepálsky सगरमाथा, Sagarmátha; tibetsky ཇོ་མོ་གླང་མ, Džomolangma, šerpsky: ཇ་མོ་གླང་མ Čhamolangma) je nejvýše položený bod na Zemi nad hladinou moře. Nachází se v Mahálangurském Himálaji a přes její vrchol vede čínsko-nepálská hranice. Její nadmořská výška (výška sněhu) 8 848,86 m byla naposledy stanovena v roce 2020 čínskými i nepálskými úřady. Mount Everest vznikl spolu s Himálajem kolizí indické a…",
+    "url": "https://cs.wikipedia.org/wiki/Mount_Everest",
+    "language": "cs",
+    "source": "Wikipedie",
+    "license": "https://creativecommons.org/licenses/by-sa/4.0/",
+    "photo": {
+      "src": "/images/places/wiki-cs-23540.jpg",
+      "file": "Everest_North_Face_toward_Base_Camp_Tibet_Luca_Galuzzi_2006.jpg",
+      "url": "https://commons.wikimedia.org/wiki/File:Everest_North_Face_toward_Base_Camp_Tibet_Luca_Galuzzi_2006.jpg",
+      "credit": "Luca Galuzzi (Lucag)",
+      "license": "CC BY-SA 2.5",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.5",
+      "remote": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e7/Everest_North_Face_toward_Base_Camp_Tibet_Luca_Galuzzi_2006.jpg/960px-Everest_North_Face_toward_Base_Camp_Tibet_Luca_Galuzzi_2006.jpg?utm_source=cs.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+    },
+    "collection": "Himálaj",
+    "facts": [
+      "Nejvyšší vrchol světa nad hladinou moře.",
+      "Prochází jím hranice Nepálu a Číny."
+    ]
+  },
+  {
+    "id": "cs:31447",
+    "name": "Eiffelova věž",
+    "lat": 48.858296,
+    "lon": 2.294479,
+    "text": "Eiffelova věž (francouzsky La Tour Eiffel /tuʀ ɛfɛl/) je ocelová věž v Paříži, v současnosti nejznámější pařížská dominanta. Byla postavena v letech 1887 až 1889 a až do roku 1930, kdy byl dostavěn Chrysler Building, byla s výškou 300,65 metrů nejvyšší stavbou světa. Dnes měří včetně antény na vrcholu 330 metrů. Je pojmenována po svém konstruktérovi Gustavu Eiffelovi. Eiffelova věž byla postavena u příležitosti st…",
+    "url": "https://cs.wikipedia.org/wiki/Eiffelova_v%C4%9B%C5%BE",
+    "language": "cs",
+    "source": "Wikipedie",
+    "license": "https://creativecommons.org/licenses/by-sa/4.0/",
+    "photo": {
+      "src": "/images/places/wiki-cs-31447.jpg",
+      "file": "Tour_Eiffel_Wikimedia_Commons.jpg",
+      "url": "https://commons.wikimedia.org/wiki/File:Tour_Eiffel_Wikimedia_Commons.jpg",
+      "credit": "Benh LIEU SONG",
+      "license": "Public domain",
+      "licenseUrl": "",
+      "remote": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a8/Tour_Eiffel_Wikimedia_Commons.jpg/960px-Tour_Eiffel_Wikimedia_Commons.jpg?utm_source=cs.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+    },
+    "collection": "Paříž",
+    "facts": [
+      "Pařížská ocelová věž vyrostla v letech 1887–1889.",
+      "Jméno nese po Gustavu Eiffelovi."
+    ]
+  },
+  {
+    "id": "cs:40303",
+    "name": "Socha Svobody",
+    "lat": 40.68920917,
+    "lon": -74.04442528,
+    "text": "Socha Svobody je obrovská neoklasicistní socha nacházející se na Liberty Island (Ostrov svobody) v newyorském přístavu ve Spojených státech. Tuto měděnou sochu, dar francouzského lidu obyvatelům Spojených států, navrhl francouzský sochař Frédéric Auguste Bartholdi a její kovovou kostru zkonstruoval Gustave Eiffel. Socha byla dne 28. října 1886 slavnostně posvěcena. Socha představuje oděnou římskou bohyni svobody L…",
+    "url": "https://cs.wikipedia.org/wiki/Socha_Svobody",
+    "language": "cs",
+    "source": "Wikipedie",
+    "license": "https://creativecommons.org/licenses/by-sa/4.0/",
+    "photo": {
+      "src": "/images/places/wiki-cs-40303.jpg",
+      "file": "Lady_Liberty_under_a_blue_sky_(cropped).jpg",
+      "url": "https://commons.wikimedia.org/wiki/File:Lady_Liberty_under_a_blue_sky_(cropped).jpg",
+      "credit": "User:Mcj1800",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "remote": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/dd/Lady_Liberty_under_a_blue_sky_%28cropped%29.jpg/960px-Lady_Liberty_under_a_blue_sky_%28cropped%29.jpg?utm_source=cs.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+    },
+    "collection": "New York",
+    "facts": [
+      "Měděnou sochu na Liberty Island darovala Francie Spojeným státům."
+    ]
+  },
+  {
+    "id": "cs:41720",
+    "name": "Chufuova pyramida",
+    "lat": 29.97915,
+    "lon": 31.13422,
+    "text": "Chufuova pyramida (též Cheopsova pyramida nebo Velká pyramida) je největší pyramida v Egyptě, největší známá kamenná stavba vybudovaná v období starověku, první a současně jediný do dnešní doby zachovaný z klasických divů světa. Dnes je pokládána za nejcharakterističtější symbol staroegyptské civilizace. Proto je také jedním z míst nejvíce zatížených turistickým ruchem. Pyramida se nachází na pyramidovém poli v Gí…",
+    "url": "https://cs.wikipedia.org/wiki/Chufuova_pyramida",
+    "language": "cs",
+    "source": "Wikipedie",
+    "license": "https://creativecommons.org/licenses/by-sa/4.0/",
+    "photo": {
+      "src": "/images/places/wiki-cs-41720.jpg",
+      "file": "Kheops-Pyramid.jpg",
+      "url": "https://commons.wikimedia.org/wiki/File:Kheops-Pyramid.jpg",
+      "credit": "Nina",
+      "license": "CC BY 2.5",
+      "licenseUrl": "https://creativecommons.org/licenses/by/2.5",
+      "remote": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e3/Kheops-Pyramid.jpg/960px-Kheops-Pyramid.jpg?utm_source=cs.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+    },
+    "collection": "Egypt",
+    "facts": [
+      "Jediný dochovaný ze sedmi antických divů světa stojí v egyptské Gíze."
+    ]
+  },
+  {
+    "id": "cs:42154",
+    "name": "Golden Gate Bridge",
+    "lat": 37.819722,
+    "lon": -122.478611,
+    "text": "Golden Gate (anglicky Golden Gate Bridge) je americký visutý most ve státě Kalifornie, kterým byla překonána úžina Golden Gate, jíž se Sanfranciský záliv vlévá do Tichého oceánu. Spojuje město San Francisco ležící na severním cípu stejnojmenného poloostrova s městem Sausalito ležícím na jižním cípu poloostrova Marin County. Stavba, kterou financovala organizace Work Projects Administration, začala v roce 1933 a tr…",
+    "url": "https://cs.wikipedia.org/wiki/Golden_Gate_Bridge",
+    "language": "cs",
+    "source": "Wikipedie",
+    "license": "https://creativecommons.org/licenses/by-sa/4.0/",
+    "photo": {
+      "src": "/images/places/wiki-cs-42154.jpg",
+      "file": "GoldenGateBridge-001.jpg",
+      "url": "https://commons.wikimedia.org/wiki/File:GoldenGateBridge-001.jpg",
+      "credit": "Rich Niewiroski Jr.",
+      "license": "CC BY 2.5",
+      "licenseUrl": "https://creativecommons.org/licenses/by/2.5",
+      "remote": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/0c/GoldenGateBridge-001.jpg/960px-GoldenGateBridge-001.jpg?utm_source=cs.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+    },
+    "collection": "San Francisco",
+    "facts": [
+      "Visutý most spojuje San Francisco a Sausalito nad úžinou mezi zálivem a Tichým oceánem."
+    ]
+  },
+  {
+    "id": "cs:59726",
+    "name": "Alcatraz",
+    "lat": 37.8267199,
+    "lon": -122.4228329,
+    "text": "Alcatraz je skalnatý ostrov ležící uprostřed Sanfranciského zálivu v Kalifornii. Nachází se zhruba 2 kilometry od pobřeží a jeho rozloha činí 9 hektarů. Ostrov objevil námořní důstojník Juan Manuel de Ayala, když v roce 1775 jako první Evropan na ostrově přistál. Jméno ostrova vzniklo z původního španělského názvu Isla de los Alcatraces (ostrov terejů). Od roku 1850 byla na Alcatrazu umístěna obranná pevnost, jež…",
+    "url": "https://cs.wikipedia.org/wiki/Alcatraz",
+    "language": "cs",
+    "source": "Wikipedie",
+    "license": "https://creativecommons.org/licenses/by-sa/4.0/",
+    "photo": {
+      "src": "/images/places/wiki-cs-59726.jpg",
+      "file": "Alcatraz_Island_as_seen_from_the_East.jpg",
+      "url": "https://commons.wikimedia.org/wiki/File:Alcatraz_Island_as_seen_from_the_East.jpg",
+      "credit": "Frank Schulenburg",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "remote": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/bc/Alcatraz_Island_as_seen_from_the_East.jpg/960px-Alcatraz_Island_as_seen_from_the_East.jpg?utm_source=cs.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+    },
+    "collection": "San Francisco",
+    "facts": [
+      "Skalnatý ostrov v zálivu sloužil jako pevnost i jako federální věznice."
+    ]
+  },
+  {
+    "id": "cs:67609",
+    "name": "Empire State Building",
+    "lat": 40.74833333,
+    "lon": -73.98555556,
+    "text": "Empire State Building je 102patrová budova postavená ve stylu art deco, nacházející se v New Yorku v USA na křižovatce Páté Avenue a West 34th Street. Po svém dokončení v roce 1931 se stala na více než 40 let nejvyšší budovou světa, v roce 1972 ji překonala severní věž Světového obchodního centra. Po zřícení budov při teroristických útocích 11. září 2001 se Empire State Building stala nejvyšší budovou New Yorku a…",
+    "url": "https://cs.wikipedia.org/wiki/Empire_State_Building",
+    "language": "cs",
+    "source": "Wikipedie",
+    "license": "https://creativecommons.org/licenses/by-sa/4.0/",
+    "photo": {
+      "src": "/images/places/wiki-cs-67609.jpg",
+      "file": "Empire_State_Building_From_Rooftop_2019-10-05_19-11.jpg",
+      "url": "https://commons.wikimedia.org/wiki/File:Empire_State_Building_From_Rooftop_2019-10-05_19-11.jpg",
+      "credit": "Axel Tschentscher",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "remote": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/ab/Empire_State_Building_From_Rooftop_2019-10-05_19-11.jpg/960px-Empire_State_Building_From_Rooftop_2019-10-05_19-11.jpg?utm_source=cs.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+    },
+    "collection": "New York",
+    "facts": [
+      "Newyorský mrakodrap ve stylu art deco má 102 podlaží.",
+      "Dokončen byl v roce 1931."
+    ]
+  },
+  {
+    "id": "cs:84652",
+    "name": "Louvre",
+    "lat": 48.86111111,
+    "lon": 2.33583333,
+    "text": "Louvre je muzeum umění v Paříži. Na ploše 72 tisíc m2 vystavuje přes 35 tisíc exponátů (z celkové sbírky asi 554 tisíc) od pravěku po 19. století. V roce 2012 Louvre navštívilo deset milionů lidí, v roce 2017 jejich počet klesl na 8,1 milionu, v roce 2018 však opět stoupl na rekordních 10,2 milionu; muzeum tak bylo nejnavštěvovanějším muzeem na světě. V roce 2024 počet klesl na 8,7 milionu. Co do výstavní plochy j…",
+    "url": "https://cs.wikipedia.org/wiki/Louvre",
+    "language": "cs",
+    "source": "Wikipedie",
+    "license": "https://creativecommons.org/licenses/by-sa/4.0/",
+    "photo": {
+      "src": "/images/places/wiki-cs-84652.jpg",
+      "file": "Pavillon_Sully_jet_d'eau.jpg",
+      "url": "https://commons.wikimedia.org/wiki/File:Pavillon_Sully_jet_d%27eau.jpg",
+      "credit": "Jebulon",
+      "license": "CC0",
+      "licenseUrl": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      "remote": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e5/Pavillon_Sully_jet_d%27eau.jpg/960px-Pavillon_Sully_jet_d%27eau.jpg?utm_source=cs.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+    },
+    "collection": "Paříž",
+    "facts": [
+      "Pařížské muzeum vystavuje umění od pravěku do 19. století."
+    ]
+  },
+  {
+    "id": "cs:118729",
+    "name": "Fudži",
+    "lat": 35.36055556,
+    "lon": 138.7275,
+    "text": "Fudži (japonsky 富士山, Fudži-san) je nejvyšší hora Japonska. Rozkládá se v regionu Čúbu na hranici mezi prefekturami Šizuoka a Jamanaši na západ od Tokia, z kterého je za jasného počasí viditelná. Hora stojí osamoceně uprostřed nížin při tichomořském pobřeží ostrova Honšú.",
+    "url": "https://cs.wikipedia.org/wiki/Fud%C5%BEi",
+    "language": "cs",
+    "source": "Wikipedie",
+    "license": "https://creativecommons.org/licenses/by-sa/4.0/",
+    "photo": {
+      "src": "/images/places/wiki-cs-118729.jpg",
+      "file": "Fuji_Kawaguchi_357.JPG",
+      "url": "https://commons.wikimedia.org/wiki/File:Fuji_Kawaguchi_357.JPG",
+      "credit": "Marion & Christoph Aistleitner",
+      "license": "CC0",
+      "licenseUrl": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      "remote": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/cd/Fuji_Kawaguchi_357.JPG/960px-Fuji_Kawaguchi_357.JPG?utm_source=cs.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+    },
+    "collection": "Japonsko",
+    "facts": [
+      "Nejvyšší hora Japonska stojí nedaleko Tokia.",
+      "Za jasného počasí je vidět i z hlavního města."
+    ]
+  },
+  {
+    "id": "cs:145906",
+    "name": "Matterhorn",
+    "lat": 45.97638889,
+    "lon": 7.65861111,
+    "text": "Matterhorn (italsky Cervino, francouzsky Cervin, Gran Becca ve valdostánském nářečí, tj. v nářečí obyvatel Údolí Aosty) je se svou nadmořskou výškou 4478 metrů jedním z nejvyšších vrcholů Alp. Tyčí se na hranici mezi Švýcarskem a Itálií, nad švýcarským Zermattem a italským městem Breuil-Cervinia. Jméno Matterhorn pochází z německého matte (horská louka) a charakteristického tvaru hory, horn (roh). Stále častěji se…",
+    "url": "https://cs.wikipedia.org/wiki/Matterhorn",
+    "language": "cs",
+    "source": "Wikipedie",
+    "license": "https://creativecommons.org/licenses/by-sa/4.0/",
+    "photo": {
+      "src": "/images/places/wiki-cs-145906.jpg",
+      "file": "Matterhorn-EastAndNorthside-viewedFromZermatt_landscapeformat.jpg",
+      "url": "https://commons.wikimedia.org/wiki/File:Matterhorn-EastAndNorthside-viewedFromZermatt_landscapeformat.jpg",
+      "credit": "Marcel Wiesweg",
+      "license": "CC BY-SA 3.0",
+      "licenseUrl": "http://creativecommons.org/licenses/by-sa/3.0/",
+      "remote": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/26/Matterhorn-EastAndNorthside-viewedFromZermatt_landscapeformat.jpg/960px-Matterhorn-EastAndNorthside-viewedFromZermatt_landscapeformat.jpg?utm_source=cs.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+    },
+    "collection": "Alpy",
+    "facts": [
+      "Výrazný alpský vrchol měří 4 478 m a stojí na hranici Švýcarska a Itálie."
+    ]
+  },
+  {
+    "id": "cs:160214",
+    "name": "Grand Canyon",
+    "lat": 36.0975,
+    "lon": -112.09527778,
+    "text": "Grand Canyon (v překladu Velký kaňon) je kaňon na řece Colorado v severozápadní části Arizony, ve Spojených státech amerických. Grand Canyon se rozkládá od přítoku řeky Little Colorado až k Grand Wash Cliffs na západním okraji Koloradské plošiny, u hranice s Nevadou. Délka Velkého kaňonu je přibližně 450 kilometrů, šířka je 6 až 29 kilometrů a maximální hloubka se pohybuje mezi 1600 až 1800 metrů. Okraje náhorní p…",
+    "url": "https://cs.wikipedia.org/wiki/Grand_Canyon",
+    "language": "cs",
+    "source": "Wikipedie",
+    "license": "https://creativecommons.org/licenses/by-sa/4.0/",
+    "photo": {
+      "src": "/images/places/wiki-cs-160214.jpg",
+      "file": "Grand_Canyon_view_from_Pima_Point_2010.jpg",
+      "url": "https://commons.wikimedia.org/wiki/File:Grand_Canyon_view_from_Pima_Point_2010.jpg",
+      "credit": "Chensiyuan",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "remote": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/af/Grand_Canyon_view_from_Pima_Point_2010.jpg/960px-Grand_Canyon_view_from_Pima_Point_2010.jpg?utm_source=cs.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+    },
+    "collection": "Grand Canyon",
+    "facts": [
+      "Řeka Colorado postupně hloubí mohutný kaňon v Arizoně."
+    ]
+  },
+  {
+    "id": "cs:356259",
+    "name": "Katedrála Notre-Dame (Paříž)",
+    "lat": 48.853,
+    "lon": 2.3498,
+    "text": "Katedrála Notre-Dame v Paříži (doslova katedrála Naší Paní, česky označovaná jako katedrála Panny Marie nebo chrám Matky Boží), francouzsky Cathédrale Notre-Dame de Paris, je gotická katedrála stojící na východní polovině pařížského ostrova Île de la Cité na řece Seině v Paříži. Je katedrálou pařížské římskokatolické arcidiecéze. Byla postavena v letech 1163–1345. Je považována za jeden z nejkrásnějších příkladů f…",
+    "url": "https://cs.wikipedia.org/wiki/Katedr%C3%A1la_Notre-Dame_%28Pa%C5%99%C3%AD%C5%BE%29",
+    "language": "cs",
+    "source": "Wikipedie",
+    "license": "https://creativecommons.org/licenses/by-sa/4.0/",
+    "photo": {
+      "src": "/images/places/wiki-cs-356259.jpg",
+      "file": "Notre-Dame_de_Paris_2013-07-24.jpg",
+      "url": "https://commons.wikimedia.org/wiki/File:Notre-Dame_de_Paris_2013-07-24.jpg",
+      "credit": "P e z i",
+      "license": "CC BY-SA 3.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+      "remote": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/af/Notre-Dame_de_Paris_2013-07-24.jpg/960px-Notre-Dame_de_Paris_2013-07-24.jpg?utm_source=cs.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+    },
+    "collection": "Paříž",
+    "facts": [
+      "Gotická katedrála stojí na ostrově uprostřed Seiny.",
+      "Stavěla se v letech 1163–1345."
+    ]
+  },
+  {
+    "id": "cs:498515",
+    "name": "Skógafoss",
+    "lat": 63.52972222,
+    "lon": -19.51388889,
+    "text": "Vodopád Skógafoss (česky Lesní vodopád) na řece Skóga leží na jihu Islandu poblíž města Skógar. Padá z bývalých pobřežních útesů, které se dnes nacházejí asi 5 kilometrů od moře. Táhnou se stovky kilometrů a oddělují pobřeží od islandské vysočiny. Skógafoss je jedním z největších a také nejkrásnějších vodopádů na Islandu. Je 25 metrů široký a 60 metrů vysoký. Napájí jej řeka Skógá, na níž je vodopádů více. Díky vo…",
+    "url": "https://cs.wikipedia.org/wiki/Sk%C3%B3gafoss",
+    "language": "cs",
+    "source": "Wikipedie",
+    "license": "https://creativecommons.org/licenses/by-sa/4.0/",
+    "photo": {
+      "src": "/images/places/wiki-cs-498515.jpg",
+      "file": "Skogafoss-02-2018-gje.jpg",
+      "url": "https://commons.wikimedia.org/wiki/File:Skogafoss-02-2018-gje.jpg",
+      "credit": "Gerd Eichmann",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "remote": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3b/Skogafoss-02-2018-gje.jpg/960px-Skogafoss-02-2018-gje.jpg?utm_source=cs.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+    },
+    "collection": "Island",
+    "facts": [
+      "Islandský vodopád padá z bývalých pobřežních útesů.",
+      "Je 60 m vysoký."
+    ]
+  }
+]

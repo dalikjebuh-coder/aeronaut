@@ -1,0 +1,120 @@
+/* Location selection uses its own layout so mission and hangar grids stay independent. */
+.horizon-ui .game-menu[data-step="3"][data-game-mode="free"]{
+  background:linear-gradient(110deg,#0c1925f5,#102330ed),var(--destination-image) center/cover no-repeat;
+}
+.horizon-ui .game-menu[data-step="3"][data-game-mode="free"] .menu-content{
+  max-width:1400px;padding:88px 28px 156px;
+}
+.horizon-ui .game-menu[data-step="3"][data-game-mode="free"] .setup-steps-nav{margin-bottom:16px}
+.horizon-ui .game-menu[data-step="3"][data-game-mode="free"] #locationStep{display:block}
+.horizon-ui .game-menu[data-step="3"][data-game-mode="free"] #locationStep>.location-heading{margin:0 0 22px}
+.horizon-ui .game-menu[data-step="3"][data-game-mode="free"] .location-heading h1{
+  font-size:clamp(32px,3.4vw,46px);letter-spacing:-1.4px;margin:0 0 8px;
+}
+.horizon-ui .game-menu[data-step="3"][data-game-mode="free"] .location-heading>p{font-size:16px;line-height:1.45;margin:0;color:#b8cbd7}
+.horizon-ui #freeFlightSetup{display:grid;grid-template-columns:minmax(0,1fr) 350px;align-items:start;gap:22px}
+.horizon-ui #freeFlightSetup .free-destination-panel,.horizon-ui #freeFlightSetup #freeAtmosphere{
+  min-width:0;border:1px solid #aac3d13b;border-radius:8px;background:#122634;
+}
+.horizon-ui #freeFlightSetup .free-destination-panel{padding:20px}
+.horizon-ui #freeFlightSetup .location-search{margin:0 0 20px;padding:0;border:0;background:none}
+.horizon-ui #freeFlightSetup .location-search>label{font-size:14px;font-weight:500;color:#dce7ed;margin:0 0 9px}
+.horizon-ui #freeFlightSetup .location-search-row{display:flex;flex-wrap:nowrap;gap:9px}
+.horizon-ui #freeFlightSetup .location-search-row input{
+  min-width:0;flex:1 1 0;padding:11px 13px;min-height:46px;background:#0b1b28;border-color:#8aa8bc77;font-size:16px;
+}
+.horizon-ui #freeFlightSetup .location-search-row input::placeholder{color:#9db2c1}
+.horizon-ui #freeFlightSetup #locationSearchButton{
+  flex:none;min-height:46px;padding:10px 17px;font-size:15px;background:#2c485b;border-color:#9db6c655;color:#f1f6f8;
+}
+.horizon-ui #freeFlightSetup #locationSearchButton:hover:not(:disabled){background:#3a5a70;border-color:#f1cf82}
+.horizon-ui #freeFlightSetup .location-search-status{font-size:14px;line-height:1.5;margin:12px 0 0}
+.horizon-ui #freeFlightSetup .location-search-results{max-height:230px;overflow-y:auto;margin-top:12px}
+.horizon-ui #freeFlightSetup .location-search-result{gap:10px;padding:12px;font-size:15px;background:#1c3547}
+.horizon-ui #freeFlightSetup .location-search-result strong{font-size:15px}
+.horizon-ui #freeFlightSetup .location-search-result span{font-size:12px}
+.horizon-ui #freeFlightSetup .free-section-title{margin:0 0 12px;font-size:14px;line-height:1.3;font-weight:500;color:#b8cbd7}
+.horizon-ui #freeFlightSetup .free-destination-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.horizon-ui #freeFlightSetup #locationCards{display:contents}
+.horizon-ui #freeFlightSetup .location-card{height:154px;min-height:154px;box-shadow:none;border-color:#6d8a9b55;border-radius:5px}
+.horizon-ui #freeFlightSetup .location-card>img{opacity:.96}
+.horizon-ui #freeFlightSetup .location-card:before{background:linear-gradient(180deg,#07111a00 20%,#07111a44 45%,#07111af2)}
+.horizon-ui #freeFlightSetup .location-card>div{left:13px;right:12px;bottom:13px}
+.horizon-ui #freeFlightSetup .location-card small{font-size:10px;letter-spacing:.9px;color:#d4e0e8;margin-bottom:6px}
+.horizon-ui #freeFlightSetup .location-card strong{font-size:23px;line-height:1.1;letter-spacing:-.5px;text-shadow:0 1px 6px #0008}
+.horizon-ui #freeFlightSetup .location-card[aria-pressed="true"]{border:2px solid #f1cf82;box-shadow:0 0 0 2px #f1cf8222}
+.horizon-ui #freeFlightSetup .location-card>i{right:9px;top:9px;width:24px;height:24px;font-size:16px}
+.horizon-ui #freeFlightSetup .free-map-card{
+  background:radial-gradient(circle at 85% 12%,#325a6c88,transparent 70%),repeating-linear-gradient(0deg,#a9c1cd0b 0,#a9c1cd0b 1px,transparent 1px,transparent 22px),repeating-linear-gradient(90deg,#a9c1cd0b 0,#a9c1cd0b 1px,#183043 1px,#183043 22px);
+}
+.horizon-ui #freeFlightSetup .free-map-card:before{background:linear-gradient(0deg,#112532,transparent)}
+.horizon-ui #freeFlightSetup .free-map-card>svg{position:absolute;top:15px;left:14px;width:29px;height:29px;color:#f1cf82}
+.horizon-ui #freeFlightSetup .free-map-card strong{font-size:20px;color:#f5dda9;text-shadow:none}
+.horizon-ui #freeFlightSetup .free-map-card p{display:block;margin:7px 0 0;font-size:12px;color:#c1d3df;line-height:1.3}
+.horizon-ui #freeFlightSetup .free-map-card:hover:not(:disabled){border-color:#f1cf82}
+.horizon-ui #freeFlightSetup .free-flight-sidebar{display:flex;flex-direction:column;gap:14px;min-width:0}
+.horizon-ui #freeFlightSetup #selectedLocationPanel{
+  margin:0;min-height:84px;padding:16px 18px;gap:13px;background:#183346;border-color:#e7c77d66;align-items:center;
+}
+.horizon-ui #freeFlightSetup #selectedLocationPanel>svg{width:24px;height:24px;flex:none}
+.horizon-ui #freeFlightSetup #selectedLocationPanel>div>span{font-size:11px;line-height:1.3;letter-spacing:1px;color:#c1d4df}
+.horizon-ui #freeFlightSetup #chosenLocationName{font-size:24px;line-height:1.15;margin-top:5px;color:#ffdfa0}
+.horizon-ui #freeFlightSetup #freeAtmosphere{grid-column:auto;grid-row:auto;margin:0;padding:0 0 18px;align-self:auto}
+.horizon-ui #freeFlightSetup #freeAtmosphere .panel-heading{padding:16px 18px;border-bottom:1px solid #a9c3d12b}
+.horizon-ui #freeFlightSetup #freeAtmosphere .panel-heading h2{font-size:21px;line-height:1.2}
+.horizon-ui #freeFlightSetup #freeAtmosphere label{margin:15px 18px 9px;font-size:12px;font-weight:500;letter-spacing:.7px;color:#c1d4df}
+.horizon-ui #freeFlightSetup #freeAtmosphere .choice-row{max-width:none;gap:6px;margin:0 16px}
+.horizon-ui #freeFlightSetup #freeAtmosphere .choice-row button{min-width:0;min-height:44px;padding:8px 4px;font-size:14px;color:#dbe7ef;background:#0d202e;border:1px solid #8ba5b746}
+.horizon-ui #freeFlightSetup #freeAtmosphere .choice-row button[aria-pressed="true"]{background:#e6c77f;color:#182b37;border-color:#f1cf82;font-weight:600}
+.horizon-ui #freeFlightSetup #freeAtmosphere .weather-card{height:112px;min-height:112px;min-width:0}
+.horizon-ui #freeFlightSetup #freeAtmosphere .weather-card span{font-size:15px;bottom:10px;color:white;text-align:center}
+.horizon-ui #freeFlightSetup #freeAtmosphere .weather-card[aria-pressed="true"]{border:2px solid #f1cf82;box-shadow:0 0 0 2px #f1cf8222}
+.horizon-ui .game-menu[data-step="3"][data-game-mode="free"] .menu-footer{gap:18px;min-height:88px;padding:14px 28px}
+.horizon-ui .game-menu[data-step="3"][data-game-mode="free"] #flightSummary{display:block!important;flex:1;min-width:0}
+.horizon-ui .game-menu[data-step="3"][data-game-mode="free"] #flightSummary .summary-label{font-size:10px;margin-bottom:5px;color:#adc2d1}
+.horizon-ui .game-menu[data-step="3"][data-game-mode="free"] #flightSummary>div{font-size:14px;line-height:1.5;color:#e3edf2}
+.horizon-ui .game-menu[data-step="3"][data-game-mode="free"] #startButton{width:210px;min-width:180px;min-height:54px;font-size:20px;padding:12px 20px;flex:none}
+.horizon-ui .game-menu[data-step="3"][data-game-mode="free"] #locationBack{font-size:15px;white-space:nowrap;max-width:none;margin-left:0;min-height:44px}
+.horizon-ui:not(.flying):has(.game-menu[data-step="3"][data-game-mode="free"]) .cesium-viewer-bottom{bottom:88px!important;left:0!important;width:100%;padding:1px 20px;background:#0c1925f5;border-top:1px solid #aac3d126}
+@media(min-width:901px) and (max-height:820px){
+  .horizon-ui .game-menu[data-step="3"][data-game-mode="free"] .setup-steps-nav{margin-bottom:10px}
+  .horizon-ui .game-menu[data-step="3"][data-game-mode="free"] #locationStep>.location-heading{margin-bottom:16px}
+  .horizon-ui .game-menu[data-step="3"][data-game-mode="free"] .location-heading h1{font-size:34px;margin-bottom:5px}
+  .horizon-ui #freeFlightSetup .free-destination-panel{padding:16px}
+  .horizon-ui #freeFlightSetup .location-search{margin-bottom:15px}
+  .horizon-ui #freeFlightSetup .location-card{height:116px;min-height:116px}
+  .horizon-ui #freeFlightSetup .free-map-card>svg{width:24px;height:24px;top:11px}
+  .horizon-ui #freeFlightSetup .free-map-card p{display:none}
+  .horizon-ui #freeFlightSetup #selectedLocationPanel{min-height:72px;padding:13px 16px}
+  .horizon-ui #freeFlightSetup #freeAtmosphere .weather-card{height:102px;min-height:102px}
+}
+@media(max-width:1100px){
+  .horizon-ui #freeFlightSetup{grid-template-columns:minmax(0,1fr) 320px;gap:16px}
+  .horizon-ui #freeFlightSetup .free-destination-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .horizon-ui .game-menu[data-step="3"][data-game-mode="free"] #flightSummary{display:none!important}
+  .horizon-ui .game-menu[data-step="3"][data-game-mode="free"] .menu-status{margin-right:auto}
+}
+@media(max-width:760px){
+  .horizon-ui .game-menu[data-step="3"][data-game-mode="free"] .menu-content{padding:88px 16px 150px}
+  .horizon-ui .game-menu[data-step="3"][data-game-mode="free"] .setup-steps-nav{gap:9px;margin-bottom:17px}
+  .horizon-ui .game-menu[data-step="3"][data-game-mode="free"] .location-heading h1{font-size:34px}
+  .horizon-ui #freeFlightSetup{grid-template-columns:1fr;gap:16px}
+  .horizon-ui #freeFlightSetup .free-destination-panel{padding:16px}
+  .horizon-ui #freeFlightSetup .free-destination-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .horizon-ui #freeFlightSetup .location-card{height:136px;min-height:136px}
+  .horizon-ui #freeFlightSetup .free-flight-sidebar{display:grid;grid-template-columns:1fr}
+  .horizon-ui .game-menu[data-step="3"][data-game-mode="free"] .menu-footer{display:flex;flex-wrap:wrap;padding:12px 16px;gap:12px;min-height:82px}
+  .horizon-ui .game-menu[data-step="3"][data-game-mode="free"] .menu-status{display:none}
+  .horizon-ui .game-menu[data-step="3"][data-game-mode="free"] #locationBack{margin-right:auto;padding:10px 4px}
+  .horizon-ui .game-menu[data-step="3"][data-game-mode="free"] #startButton{width:auto;min-width:180px;max-width:65%;font-size:18px}
+  .horizon-ui:not(.flying):has(.game-menu[data-step="3"][data-game-mode="free"]) .cesium-viewer-bottom{bottom:82px!important}
+}
+@media(max-width:480px){
+  .horizon-ui #freeFlightSetup .free-destination-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .horizon-ui #freeFlightSetup .location-card{height:125px;min-height:125px}
+  .horizon-ui #freeFlightSetup .location-card strong{font-size:22px}
+  .horizon-ui #freeFlightSetup .free-map-card strong{font-size:19px}
+  .horizon-ui #freeFlightSetup .free-map-card p{display:none}
+  .horizon-ui #freeFlightSetup .location-search-row input{font-size:14px;padding:10px}
+  .horizon-ui #freeFlightSetup #locationSearchButton{padding:10px;font-size:14px}
+}
