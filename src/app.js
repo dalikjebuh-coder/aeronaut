@@ -21,6 +21,7 @@ import {FLIGHT_CAMERA_MODES,flightCameraPose,crashCameraPose} from './flight-cam
 import {landingSurfaceFlat} from './landing-surface.js';
 import {createCrashEffect} from './crash-effect.js';
 import {createGeographyGuide} from './geography-guide.js';
+import {createWeatherEffects} from './weather-effects.js';
 import {installFlightUiLayout} from './flight-ui-layout.js';
 const $=id=>document.getElementById(id);
 const C=window.Cesium;
@@ -34,7 +35,7 @@ const MODEL_STORAGE_KEY='aeronaut.aircraftModel';
 const DAYLIGHT_STORAGE_KEY='aeronaut.timeOfDay';
 const WEATHER_STORAGE_KEY='aeronaut.weather';
 const FLIGHT_CAMERA_STORAGE_KEY='aeronaut.flightCamera';
-let daylightTint,locationSearch,geographyGuide,crashEffect;
+let daylightTint,locationSearch,geographyGuide,crashEffect,weatherEffects;
 let searchCredits=[],searchPreviewCredits=[];
 const race=new BrnoRace();
 let raceView,raceBest=null,raceBestKey='';
@@ -42,13 +43,14 @@ let missionId='first-takeoff',freeConditions={time:'day',weather:'clear'};
 const currentMission=()=>getMission(missionId,'easy',$('aircraftModel').value);
 const isRace=()=>$('gameMode').value==='missions';
 const DAYLIGHT_PRESETS={
-  morning:{hour:7,color:[1,.9,.78],intensity:1.7,sky:-.07,tint:[.98,.92,.85]},
+  morning:{hour:6.5,color:[1,.9,.78],intensity:1.7,sky:-.07,tint:[.98,.92,.85]},
   day:{hour:12,color:[1,1,1],intensity:2,sky:0,tint:[1,1,1]},
-  evening:{hour:17,color:[1,.83,.65],intensity:1.6,sky:-.12,tint:[.96,.85,.75]},
+  evening:{hour:17.5,color:[1,.72,.52],intensity:1.6,sky:-.12,tint:[.98,.84,.74]},
   night:{hour:0,color:[.58,.7,1],intensity:.7,sky:-.65,tint:[.3,.37,.55]}
 };
 const WEATHER_PRESETS={
   clear:{density:.00012,visualDensity:.15,light:1,sky:0,saturation:1,skySaturation:0,tint:[1,1,1]},
+  partly:{density:.00018,visualDensity:.2,light:.96,sky:0,saturation:1,skySaturation:0,tint:[1,1,1]},
   haze:{density:.0013,visualDensity:.5,light:.94,sky:-.03,saturation:.85,skySaturation:-.35,tint:[.98,.98,.96]},
   overcast:{density:.00065,visualDensity:.35,light:.72,sky:-.15,saturation:.65,skySaturation:-.95,tint:[.86,.89,.93]}
 };
@@ -102,10 +104,12 @@ function applyTimeOfDay(place=running?state:selection()){
   viewer.scene.skyAtmosphere.saturationShift=weather.skySaturation;
   viewer.scene.fog.density=weather.density;
   viewer.scene.fog.visualDensityScalar=weather.visualDensity;
-  if(viewer.scene.sun)viewer.scene.sun.show=weatherChoice!=='overcast';
+  if(viewer.scene.sun)viewer.scene.sun.show=choice!=='night'&&weatherChoice!=='overcast';
+  weatherEffects?.setConditions(weatherChoice,choice);
   // Photogrammetry contains baked daylight; tint it along with the scene.
   daylightTint.uniforms.tint=new C.Cartesian3(...preset.tint.map((value,index)=>value*weather.tint[index]));
   daylightTint.uniforms.saturation=weather.saturation;
+  daylightTint.uniforms.sunset=choice==='evening'&&weatherChoice!=='overcast'?1:0;
   daylightTint.enabled=choice!=='day'||weatherChoice!=='clear';
   viewer.scene.requestRender();
 }
@@ -427,7 +431,7 @@ function crash(reason){
   if(crashEffect)crashEffect.play({lat:state.lat,lon:state.lon,altitude:Number.isFinite(surfaceHeight)?surfaceHeight+1:state.altitude,size:(aircraft.chaseDistance||48)*.16,onReady:()=>{if(running&&crashed)setFlightMenuVisible(true);}});
   else setFlightMenuVisible(true);
 }
-function surfaceExclusions(){return [...aircraft.entities.values,...(aircraft.surfacePrimitives||[]),...(geographyGuide?.source.entities.values||[]),...(raceView?.entities.values||[]),...(startMarker?[startMarker]:[])];}
+function surfaceExclusions(){return [...(weatherEffects?.primitives||[]),...aircraft.entities.values,...(aircraft.surfacePrimitives||[]),...(geographyGuide?.source.entities.values||[]),...(raceView?.entities.values||[]),...(startMarker?[startMarker]:[])];}
 function terrainSample(lat,lon){return mode==='demo'?demo.surface(lat,lon):viewer.scene.sampleHeight(C.Cartographic.fromDegrees(lon,lat),surfaceExclusions());}
 function checkLandingSurface(){
   const sampled=terrainSample(state.lat,state.lon);
@@ -567,6 +571,11 @@ async function init(){
     if(!C)throw new Error('Cesium missing');
     C.Ion.defaultAccessToken='';
     viewer=new C.Viewer('cesiumContainer',{scene3DOnly:true,baseLayer:false,baseLayerPicker:false,geocoder:false,animation:false,timeline:false,homeButton:false,sceneModePicker:false,navigationHelpButton:false,fullscreenButton:false,infoBox:false,selectionIndicator:false,shouldAnimate:false,skyBox:false,shadows:false,contextOptions:{webgl:{alpha:false}}});
+    // skyBox:false also omits Cesium's default Sun primitive.
+    viewer.scene.sun=new C.Sun();
+    viewer.scene.sun.glowFactor=1.4;
+    viewer.scene.sunBloom=true;
+    weatherEffects=createWeatherEffects(viewer);
     installFlightUiLayout({document});
     viewer.scene.globe.baseColor=C.Color.fromCssColorString('#7a9466');viewer.scene.globe.enableLighting=false;viewer.scene.globe.depthTestAgainstTerrain=true;
     viewer.scene.backgroundColor=C.Color.fromCssColorString('#a4c3ca');viewer.scene.fog.density=0.00012;viewer.resolutionScale=Math.min(devicePixelRatio,1.5)/devicePixelRatio;
@@ -574,8 +583,26 @@ async function init(){
     viewer.scene.renderError.addEventListener(()=>{loading('3D zobrazení se zastavilo');$('loading').querySelector('p').textContent='Zkus obnovit stránku v prohlížeči s podporou WebGL. Pokud problém trvá, zavři ostatní 3D aplikace.';});
     daylightTint=viewer.scene.postProcessStages.add(new C.PostProcessStage({
       name:'aeronaut_daylight',
-      uniforms:{tint:new C.Cartesian3(1,1,1),saturation:1},
-      fragmentShader:'uniform sampler2D colorTexture; uniform vec3 tint; uniform float saturation; in vec2 v_textureCoordinates; void main(){vec4 color=texture(colorTexture,v_textureCoordinates); float gray=dot(color.rgb,vec3(0.2126,0.7152,0.0722)); out_FragColor=vec4(mix(vec3(gray),color.rgb,saturation)*tint,color.a);}'
+      uniforms:{tint:new C.Cartesian3(1,1,1),saturation:1,sunset:0},
+      fragmentShader:`
+        uniform sampler2D colorTexture;
+        uniform sampler2D depthTexture;
+        uniform vec3 tint;
+        uniform float saturation;
+        uniform float sunset;
+        in vec2 v_textureCoordinates;
+        void main(){
+          vec4 color=texture(colorTexture,v_textureCoordinates);
+          float gray=dot(color.rgb,vec3(0.2126,0.7152,0.0722));
+          vec3 rgb=mix(vec3(gray),color.rgb,saturation)*tint;
+          if(sunset>0.0 && czm_readDepth(depthTexture,v_textureCoordinates)>=0.999999){
+            vec4 eye=czm_inverseProjection*vec4(v_textureCoordinates*2.0-1.0,1.0,1.0);
+            float alignment=dot(normalize(eye.xyz),czm_sunDirectionEC);
+            float glow=smoothstep(0.9986,0.99997,alignment);
+            rgb=mix(rgb,rgb*vec3(1.0,0.52,0.32),glow*sunset);
+          }
+          out_FragColor=vec4(rgb,color.a);
+        }`
     }));
     daylightTint.enabled=false;
     try{const saved=localStorage.getItem(DAYLIGHT_STORAGE_KEY);$('timeOfDay').value=Object.hasOwn(DAYLIGHT_PRESETS,saved)?saved:'day';}catch{$('timeOfDay').value='day';}

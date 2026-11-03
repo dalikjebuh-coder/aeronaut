@@ -55,10 +55,10 @@ test('steep slopes, ledges and hard touchdowns still fail',()=>{
 
 test('application surface queries exclude aircraft light and trail primitives',()=>{
   const app=fs.readFileSync(new URL('../src/app.js',import.meta.url),'utf8');
-  const airplane={},lights={},trails={};
-  const context=vm.createContext({aircraft:{entities:{values:[airplane]},surfacePrimitives:[lights,trails]},geographyGuide:null,raceView:null,startMarker:null});
+  const airplane={},lights={},trails={},clouds={};
+  const context=vm.createContext({aircraft:{entities:{values:[airplane]},surfacePrimitives:[lights,trails]},weatherEffects:{primitives:[clouds]},geographyGuide:null,raceView:null,startMarker:null});
   vm.runInContext(app.slice(app.indexOf('function surfaceExclusions(){'),app.indexOf('function terrainSample(')),context);
-  assert.deepEqual(Array.from(vm.runInContext('surfaceExclusions()',context)),[airplane,lights,trails]);
+  assert.deepEqual(Array.from(vm.runInContext('surfaceExclusions()',context)),[clouds,airplane,lights,trails]);
 });
 
 test('touchdown refreshes a stale surface decision even before the sampling interval expires',()=>{

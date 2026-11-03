@@ -7,7 +7,7 @@ export function createTurbulence({random=Math.random}={}){
   let nextAt=null,burst=null,lastTime=null;
   const quiet=()=>({intensity:0,active:false,started:false});
   const gap=weather=>{
-    const [min,max]=({clear:[60,140],haze:[45,110],overcast:[25,75]})[weather]||[60,140];
+    const [min,max]=({clear:[60,140],partly:[50,125],haze:[45,110],overcast:[25,75]})[weather]||[60,140];
     return min+random()*(max-min);
   };
   function reset(){nextAt=null;burst=null;lastTime=null;}

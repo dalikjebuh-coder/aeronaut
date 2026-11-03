@@ -118,3 +118,6 @@
   .horizon-ui #freeFlightSetup .location-search-row input{font-size:14px;padding:10px}
   .horizon-ui #freeFlightSetup #locationSearchButton{padding:10px;font-size:14px}
 }
+
+/* Four weather choices remain readable on narrow screens. */
+@media(max-width:600px){.horizon-ui #freeFlightSetup #freeAtmosphere .choice-row[aria-label="Počasí"]{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}}

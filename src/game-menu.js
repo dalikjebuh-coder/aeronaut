@@ -136,7 +136,7 @@ export function syncGameMenu({running=false,busy=false,mode='google',hasToken=fa
   $('summaryMode').textContent=race?'Mise':'Volný let';$('summaryAircraft').textContent=aircraftChosen?info.name:'Vyber letadlo';
   $('summaryPlace').textContent=mode==='demo'?'Offline trénink':place.name;$('summaryPlace').title=place.name;
   $('summaryTime').textContent={morning:'Ráno',day:'Den',evening:'Podvečer',night:'Noc'}[$('timeOfDay').value];
-  $('summaryWeather').textContent={clear:'Jasno',haze:'Opar',overcast:'Zataženo'}[$('weather').value];
+  $('summaryWeather').textContent={clear:'Jasno',partly:'Polojasno',haze:'Opar',overcast:'Zataženo'}[$('weather').value];
   $('locationHeading').textContent=race?'Mise v Brně':mode==='demo'?'Offline trénink':'Kam poletíš?';
   $('locationStepHint').textContent=race?'Plň mise, zlepšuj medaile a postupně odemykej další lety.':mode==='demo'?'Trénink bez připojení k mapám.':'Vyber místo a podmínky letu.';
   for(const button of document.querySelectorAll('[data-location]')){

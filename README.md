@@ -93,3 +93,5 @@ Zdrojové informace: [Map Tiles API](https://developers.google.com/maps/document
 ### Nové světové mise
 
 Katalog nyní obsahuje 35 misí včetně 12 nových světových expedic: osm letištních příletů a čtyři lety nad významnými místy. Letištní přiblížení se přizpůsobuje vybranému stroji. Přehled destinací, zdroje dat a rozsah ověření jsou v [dokumentaci světových expedic](docs/world-expeditions.md).
+
+Počasí nabízí jasno s viditelným sluncem, polojasno s kupovitými mraky, opar s řídkými mraky a hustou oblačnost při zatažení. Mraky jsou vykreslované přímo ve 3D scéně v omezeném okolí kamery a doplňují se během letu; ráno a večer mají teplý odstín, v noci ztmavnou a slunce se skryje. Jde o vizuální oblačnost bez simulace vlhkosti, deště a stínů mraků na mapě.
