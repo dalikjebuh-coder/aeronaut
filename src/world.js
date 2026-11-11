@@ -86,10 +86,10 @@ export function createAircraft(viewer,getState,getSurfaceHeight=()=>0,sampleSurf
   const shadow=createAircraftShadow(viewer,source,getState,getSurfaceHeight,sampleSurface);
   const modelEntity=source.entities.add({position:position(()=>[0,0,modelOffset]),orientation,model:{uri:'/models/high-wing-single.glb',scale:1,minimumPixelSize:72,maximumScale:2,runAnimations:false,shadows:C.ShadowMode.ENABLED}});
   const models={
-    highWing:{uri:'/models/high-wing-single.glb',offset:-3,chase:48},
-    lowWing:{uri:'/models/citation2.glb',offset:0,chase:50},
-    airliner:{uri:'/models/b789.glb',offset:5,chase:105},
-    fighter:{uri:'/models/fa18e.glb',offset:0,chase:65}
+    highWing:{uri:'/models/high-wing-single.glb',offset:-3,chase:48,roof:{forward:.65,height:2.8}},
+    lowWing:{uri:'/models/citation2.glb',offset:0,chase:50,roof:{forward:1.2,height:2.3}},
+    airliner:{uri:'/models/b789.glb',offset:5,chase:105,roof:{forward:18,height:2.5}},
+    fighter:{uri:'/models/fa18e.glb',offset:0,chase:65,roof:{forward:1.3,height:2.4}}
   };
   const effects=createAircraftEffects(viewer,getState,radius=>{
     const{enu,convert}=basis();
@@ -104,6 +104,20 @@ export function createAircraft(viewer,getState,getSurfaceHeight=()=>0,sampleSurf
     };
   },()=>source.show);
   let selectedModel='highWing';
+  source.roofCameraView=()=>{
+    const {enu,convert}=basis();
+    const {forward,height}=models[selectedModel].roof;
+    const downAngle=19*RAD;
+    const direction=convert(0,Math.cos(downAngle),-Math.sin(downAngle));
+    const up=convert(0,Math.sin(downAngle),Math.cos(downAngle));
+    return {
+      destination:C.Matrix4.multiplyByPoint(enu,convert(0,forward,modelOffset+height),new C.Cartesian3()),
+      orientation:{
+        direction:C.Matrix4.multiplyByPointAsVector(enu,direction,new C.Cartesian3()),
+        up:C.Matrix4.multiplyByPointAsVector(enu,up,new C.Cartesian3())
+      }
+    };
+  };
   const propellerRotation=new C.CallbackProperty(()=>C.Quaternion.fromAxisAngle(C.Cartesian3.UNIT_Z,effects.propellerAngle),false);
   source.entities.add({
     show:new C.CallbackProperty(()=>selectedModel==='highWing',false),

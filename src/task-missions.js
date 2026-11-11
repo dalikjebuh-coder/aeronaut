@@ -29,13 +29,14 @@ export function missionBrief(route){
   if(type==='sightseeing')return `Proleť žlutým kuželem nad každou z ${route.gates.length} památek. Stačí jediný průlet: památka se přidá do sbírky a označí se další cíl. Není třeba čekat ani zpomalovat.`;
   if(type==='landing'&&route.brief)return route.brief+' '+(route.gates.some(g=>g.kind==='touch-and-go')?'První dosednutí je povinné. Hodnotí se průměr obou přistání.':route.objective.stop?'Úspěch se započítá až po zastavení v koridoru dráhy.':'Hodnotí se přesnost a měkkost dosednutí.');
   if(type==='landing')return `${route.groundStart?'Nejprve vzlétni. ':''}Proleť naváděcí brány, uber výkon a přistaň ve vyznačeném obdélníku ve směru dráhy.${route.wind?' Počítej s bočním větrem.':''}${route.engineLimit?' Výkon motoru je omezený.':''} Hodnotí se přesnost a měkkost dosednutí.`;
-  if(type==='lowflight')return (route.brief?route.brief+' ':'')+`Proleť všechny brány a mezi nimi zůstaň ${objective.minHeight}–${objective.maxHeight} m nad terénem v koridoru do ${objective.corridor} m od trasy. Hodnotí se podíl přesného letu, nikoli rychlost.`;
+  if(type==='lowflight')return (route.brief?route.brief+' ':'')+`Proleť všechny brány a mezi nimi zůstaň ${objective.minHeight}–${objective.maxHeight} m nad terénem v koridoru do ${objective.corridor} m od trasy. `+
+    (objective.minimumScore?`Ke splnění potřebuješ alespoň ${objective.minimumScore} % přesného letu.`:'Hodnotí se podíl přesného letu, nikoli rychlost.');
   return (route.brief?route.brief+' ':'')+'Proleť všechny brány v pořadí. První spustí čas, poslední ho zastaví. Pauza se do času nepočítá.';
 }
 const levels=['easy','normal','hard'];
 const brno=LOCATIONS.find(place=>place.id==='brno');
 const discoveryPoints=[[49.19097222,16.60736111,'Petrov','cs:81686'],[49.194444,16.598889,'Špilberk','cs:337702'],[49.2046,16.5838,'Hvězdárna','cs:146828'],[49.24062222,16.50764889,'Přehrada','cs:27634'],[49.256667,16.461667,'Veveří','cs:26471']];
-const sightseeing={id:'brno-discovery',place:'brno',location:brno,title:'Pět tváří Brna',description:'Proleť nad pěti památkami a přidej si je do sbírky. Pohodový let bez závodu s časem.',time:'evening',weather:'clear',recommended:'Hornoplošník',taskVariants:{}};
+const sightseeing={id:'brno-discovery',place:'brno',location:brno,title:'Pět tváří Brna',description:'Proleť nad pěti památkami a přidej si je do sbírky. Pohodový let bez závodu s časem.',time:'evening',weather:'partly',recommended:'Hornoplošník',taskVariants:{}};
 // Runway 09 threshold and true heading from Czech AIP LKTB AD 2.12:
 // https://aim.rlp.cz/ais_data/aip/data/valid/a2-tb-text.pdf
 // Everything else (approach heights, target zone and scoring) is authored game design.
@@ -43,7 +44,7 @@ const threshold={lat:49+9/60+10.33/3600,lon:16+40/60+33.11/3600},bearing=98*RAD;
 const runwayPoint=distance=>({lat:threshold.lat+Math.cos(bearing)*distance/EARTH/RAD,lon:threshold.lon+Math.sin(bearing)*distance/(EARTH*Math.cos(threshold.lat*RAD))/RAD});
 const landing={id:'brno-landing',place:'brno',location:brno,title:'Hladké přistání',description:'Přibliž se k dráze 09 v Tuřanech a přistaň přesně do vyznačené zóny.',time:'day',weather:'clear',recommended:'Hornoplošník',taskVariants:{}};
 const canyonSource=WORLD_MISSIONS.find(mission=>mission.id==='grandcanyon');
-const canyon={...canyonSource,id:'canyon-patrol',title:'Nízká hlídka Colorada',description:'Drž se v nízkém výškovém pásmu a sleduj říční koridor. Přesnost má přednost před rychlostí.',recommended:'Hornoplošník / Super Hornet',taskVariants:{}};
+const canyon={...canyonSource,id:'canyon-patrol',title:'Nízká hlídka Colorada',description:'Drž se v nízkém výškovém pásmu a sleduj říční koridor. Přesnost má přednost před rychlostí.',time:'day',weather:'clear',recommended:'Hornoplošník / Super Hornet',taskVariants:{}};
 for(const [index,level] of levels.entries()){
   sightseeing.taskVariants[level]={id:`brno-discovery-${level}-v1`,radius:[450,320,220][index],altitude:700,terrainFollowing:true,objective:{type:'sightseeing'},gates:discoveryPoints.map(([lat,lon,name,placeId])=>({lat,lon,name,placeId,clearance:[450,350,260][index]}))};
   const radius=[110,80,55][index];

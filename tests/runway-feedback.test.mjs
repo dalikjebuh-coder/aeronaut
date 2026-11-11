@@ -54,7 +54,7 @@ test('landing result waits for the camera pulse and cannot open over a restarted
   const app=fs.readFileSync(new URL('../src/app.js',import.meta.url),'utf8');
   for(const change of ['', 'state={}', 'running=false']){
     const timers=[],results=[],noop=()=>{};
-    const context=vm.createContext({missionFeedback:()=>({score:95}),surfaceHeight:100,isRace:()=>true,objectiveType:()=> 'landing',usesScore:()=>true,
+    const context=vm.createContext({missionFeedback:()=>({score:95}),surfaceHeight:100,isRace:()=>true,objectiveType:()=> 'landing',usesScore:()=>true,achievementCollection:()=>({items:[]}),
       engineAudio:{gatePassed:noop},recordMissionResult:()=>({medal:'gold'}),currentMission:()=>({}),syncControls:noop,notice:noop,
       localStorage:{setItem:noop},showMissionResult:result=>results.push(result),setTimeout:(fn,delay)=>timers.push({fn,delay})});
     vm.runInContext(`let running=true,crashed=false,state={},raceBest=null,raceBestKey='test';const race={route:{},score:95,update:()=>[{status:'finished',index:0}]};`+

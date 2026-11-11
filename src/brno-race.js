@@ -94,21 +94,28 @@ export class BrnoRace{
     const from=xy(previous),to=xy(state),events=[];
     let lastFraction=-1;
     while(this.next<this.route.gates.length-(type==='landing'?1:0)){
+      const gate=this.route.gates[this.next];
       const {center,normal,right}=gateFrame(this.next,this.route);
       const a=(from.x-center.x)*normal.x+(from.y-center.y)*normal.y;
       const b=(to.x-center.x)*normal.x+(to.y-center.y)*normal.y;
       if(!(a<0&&b>=0))break;
-      if((type==='takeoff'||type==='landing'||this.route.groundStart)&&state.onGround)break;
-      if(this.route.gates[this.next].kind==='touch-and-go')break;
+      if((type==='takeoff'||type==='landing'||this.route.groundStart||gate.groundSkim)&&state.onGround)break;
+      if(gate.kind==='touch-and-go')break;
       const t=-a/(b-a);
       if(t<lastFraction)break;
       const x=from.x+(to.x-from.x)*t-center.x,y=from.y+(to.y-from.y)*t-center.y;
-      const z=previous.altitude+(state.altitude-previous.altitude)*t-(this.route.gates[this.next].altitude??this.route.altitude);
-      if(Math.hypot(x*right.x+y*right.y,z)>(this.route.gates[this.next].radius??this.route.radius))break;
+      const z=previous.altitude+(state.altitude-previous.altitude)*t-(gate.altitude??this.route.altitude);
+      if(Math.hypot(x*right.x+y*right.y,z)>(gate.radius??this.route.radius))break;
       const crossedAt=previous.elapsed+(state.elapsed-previous.elapsed)*t,index=this.next++;
       lastFraction=t;
       if(index===0){this.startedAt=crossedAt;this.status='racing';}
-      if(this.next===this.route.gates.length){this.finishedAt=crossedAt;this.status='finished';}
+      if(this.next===this.route.gates.length){
+        this.finishedAt=crossedAt;
+        if(type==='lowflight'&&this.score<(objective.minimumScore??0)){
+          this.fail();
+          this.taskHint=`Přesný let ${this.score} % · potřebuješ alespoň ${objective.minimumScore} %. R · nový pokus.`;
+        }else this.status='finished';
+      }
       if(type==='landing'&&this.next===this.route.gates.length-1)this.status='landing';
       events.push({index,status:this.status});
     }

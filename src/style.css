@@ -29,7 +29,7 @@ body.flying:has(.pause-overlay:not([hidden]):not(.crashed)) #cesiumContainer{cur
 .photo-entry:hover{background:#d8ef8d26}.pause-overlay.crashed .photo-entry{display:none}
 body.photo-mode header,body.photo-mode aside,body.photo-mode #flightUI,body.photo-mode #pauseOverlay,body.photo-mode .scene-top,body.photo-mode .scene-bottom,body.photo-mode #notice{display:none!important}
 body.photo-mode main{height:100dvh}
-body.photo-mode #cesiumContainer,body.photo-mode #cesiumContainer canvas{touch-action:none;cursor:grab}
+body.flying #cesiumContainer canvas{touch-action:none;cursor:grab}
 body.photo-dragging #cesiumContainer,body.photo-dragging #cesiumContainer canvas{cursor:grabbing}
 body.photo-mode .cesium-viewer-bottom{bottom:10px!important}
 body.photo-mode .cesium-widget-credits{bottom:0!important}

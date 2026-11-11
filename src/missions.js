@@ -1,15 +1,22 @@
 import {BRNO_ROUTE,routeStart} from './brno-race.js';
 import {LOCATIONS} from './locations.js';
-import {missionVariant} from './mission-difficulty.js';
+import {missionVariant,challengeRoute} from './mission-difficulty.js';
 import {WORLD_MISSIONS} from './world-missions.js';
 import {TASK_MISSIONS} from './task-missions.js';
 import {RUNWAY_MISSIONS} from './runway-missions.js';
 import {EXPEDITION_MISSIONS} from './expedition-missions.js';
 
+const firstTakeoff=RUNWAY_MISSIONS.find(mission=>mission.id==='first-takeoff');
+export const RETIRED_RUNWAY_MISSIONS=RUNWAY_MISSIONS.filter(mission=>mission!==firstTakeoff);
+
+// Briefing ratings describe the published missions, independently of medals.
+const introMissions=new Set(['first-takeoff','brno-discovery']);
+const advancedMissions=new Set(['sf','paris','nyc','everest','matterhorn','grandcanyon','canyon-patrol','madeira','gibraltar','sfo-arrival','innsbruck','queenstown','santos-dumont','cape-peninsula','monument-valley','iguazu']);
+
 // Designed game routes: approximate landmark positions, heights in WGS84 metres.
 export const MISSIONS=[
   {id:'brno',place:'brno',title:'Nad moravskými hrady',description:'Od Petrova přes Špilberk k přehradě a hradu Veveří.',time:'day',weather:'clear',difficulty:'Úvodní trasa',route:BRNO_ROUTE},
-  {id:'prague',place:'prague',title:'Zlatá Vltava',description:'Sleduj řeku od Vyšehradu až k severnímu okraji Prahy.',time:'evening',weather:'clear',difficulty:'Plynulé zatáčky',route:{id:'prague-vltava-v1',radius:200,altitude:650,gates:[
+  {id:'prague',place:'prague',title:'Zlatá Vltava',description:'Sleduj řeku od Vyšehradu až k severnímu okraji Prahy.',time:'evening',weather:'partly',difficulty:'Plynulé zatáčky',route:{id:'prague-vltava-v1',radius:200,altitude:650,gates:[
     {name:'Vyšehrad · START',lat:50.064,lon:14.417},
     {name:'Národní divadlo',lat:50.081,lon:14.411},
     {name:'Karlův most',lat:50.0865,lon:14.4114},
@@ -35,21 +42,28 @@ export const MISSIONS=[
     {name:'Socha svobody · CÍL',lat:40.6892,lon:-74.0445}]}},
   ...WORLD_MISSIONS,
   ...TASK_MISSIONS,
-  ...RUNWAY_MISSIONS,
+  firstTakeoff,
   ...EXPEDITION_MISSIONS
-].map(mission=>({...mission,route:mission.taskVariants?.easy||mission.route,location:mission.location||LOCATIONS.find(place=>place.id===mission.place)}));
+].map(mission=>({...mission,difficultyStars:introMissions.has(mission.id)?1:advancedMissions.has(mission.id)?3:2,
+  route:mission.taskVariants?.easy||mission.route,location:mission.location||LOCATIONS.find(place=>place.id===mission.place)}));
 export function getMission(id,level='easy',model='highWing'){
-  const mission=missionVariant(MISSIONS.find(mission=>mission.id===id)||MISSIONS[0],level);
+  const base=MISSIONS.find(mission=>mission.id===id)||RETIRED_RUNWAY_MISSIONS.find(mission=>mission.id===id)||MISSIONS[0];
+  const mission=missionVariant(base,level);
   return mission.aircraftRoutes?{...mission,route:mission.aircraftRoutes[model]||mission.aircraftRoutes.highWing}:mission;
+}
+export function getPlayableMission(id,model){
+  const lesson=['first-takeoff','brno-landing','brno-discovery'].includes(id);
+  const mission=getMission(id,lesson?'easy':id==='brno'?'normal':'hard',model);
+  if(lesson||RETIRED_RUNWAY_MISSIONS.some(item=>item.id===id))return mission;
+  return{...mission,route:challengeRoute(mission,model)};
 }
 export const missionStart=mission=>({...mission.route.groundStart||routeStart(mission.route),name:mission.location.name+' · '+mission.title});
 export const TIME_NAMES={morning:'Ráno',day:'Den',evening:'Podvečer',night:'Noc'};
-export const WEATHER_NAMES={clear:'Jasno',haze:'Opar',overcast:'Zataženo'};
+export const WEATHER_NAMES={clear:'Jasno',partly:'Polojasno',haze:'Opar',overcast:'Zataženo'};
 
 
 // Teaching order is independent of saved unlocks and mission records.
 export const BRNO_LESSONS=[
-  {title:'Základy letu',ids:['first-takeoff','first-landing','brno-landing','airport-circuit']},
-  {title:'Navigace a objevování',ids:['brno-discovery','brno']},
-  {title:'Pokročilý výcvik',ids:['short-runway','repeat-circuit','crosswind','dusk-landing','emergency-landing']}
+  {title:'Základy letu',ids:['first-takeoff','brno-landing']},
+  {title:'Navigace a objevování',ids:['brno-discovery','brno']}
 ];

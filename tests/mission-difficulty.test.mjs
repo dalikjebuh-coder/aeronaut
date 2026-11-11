@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {MISSIONS,getMission,missionStart} from '../src/missions.js';
+import {MISSIONS,getMission,getPlayableMission,missionStart} from '../src/missions.js';
 import {DIFFICULTIES,routeSurfacePoints,resolveRouteSurface,underpassSurface} from '../src/mission-difficulty.js';
 import {BrnoRace,gateFrame} from '../src/brno-race.js';
 import {RAD,EARTH} from '../src/flight.js';
@@ -78,4 +78,23 @@ test('new scenic missions resolve every difficulty against high terrain while ke
     }
   }
   for(const id of ['brno','prague','sf','paris','nyc'])assert.equal(getMission(id).route.terrainFollowing,undefined);
+});
+
+test('the mission menu uses narrower routes with terrain-skimming and bridge gates that can be crossed safely',()=>{
+  for(const id of ['first-takeoff','brno-landing','brno-discovery']){
+    assert.equal(getPlayableMission(id,'highWing').route,getMission(id).route);
+  }
+  for(const id of ['brno','prague','sf','nyc','grandcanyon','matterhorn']){
+    const mission=getPlayableMission(id,'highWing'),route=prepared(mission),old=getMission(id).route;
+    assert.notEqual(route.id,old.id);
+    assert.ok(route.gates.every(gate=>gate.radius<old.radius));
+    for(const gate of route.gates.filter(gate=>gate.groundSkim))assert.equal(gate.altitude-gate.radius,gate.surface);
+    const race=new BrnoRace(route);
+    for(let index=0;index<route.gates.length;index++){
+      race.update(point(route,index,-30,index*20));
+      race.update(point(route,index,30,index*20+1));
+    }
+    assert.equal(race.status,'finished',id);
+  }
+  assert.equal(getPlayableMission('sf','highWing').route.gates.at(-1).underpass.ceiling,55);
 });

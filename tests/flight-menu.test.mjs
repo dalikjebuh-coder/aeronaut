@@ -13,26 +13,27 @@ test('C cycles the flight camera once per press and synchronizes saved and menu 
   const context=vm.createContext({FLIGHT_CAMERA_MODES,$:()=>({hidden:true}),
     window:{addEventListener:(name,handler)=>handlers.set(name,handler)},
     document:{activeElement:{tagName:'BODY'},querySelector:()=>null,querySelectorAll:()=>buttons,body:{classList:{contains:()=>true}}},
-    localStorage:{setItem:(key,value)=>saved.set(key,value)},updateCamera:()=>updates++,notice:()=>{}
+    localStorage:{setItem:(key,value)=>saved.set(key,value)},stopInspectDrag:()=>{},updateCamera:()=>updates++,notice:()=>{}
   });
-  vm.runInContext(`let running=true,paused=false,crashed=false,busy=false,mapPickerOpen=false,menuStep=3,flightCameraMode='chase';const photo={active:false},keys=new Set(),FLIGHT_CAMERA_STORAGE_KEY='camera';`+
+  vm.runInContext(`let running=true,paused=false,crashed=false,busy=false,mapDraft=null,menuStep=3,flightCameraMode='chase',flightOrbit={};const photo={active:false},keys=new Set(),FLIGHT_CAMERA_STORAGE_KEY='camera';`+
     app.slice(app.indexOf('function syncFlightCameraButtons(){'),app.indexOf('\nsyncFlightCameraButtons();'))+
     app.slice(app.indexOf("window.addEventListener('keydown'"),app.indexOf("window.addEventListener('keyup'")),context);
   const press=(extra={})=>handlers.get('keydown')({code:'KeyC',preventDefault(){},...extra});
-  for(const mode of ['distant','overhead','front','cinematic','chase']){
+  for(const mode of ['distant','overhead','front','cinematic','roof','chase']){
     press();
     assert.equal(saved.get('camera'),mode);
     assert.deepEqual(buttons.filter(button=>button['aria-pressed']==='true').map(button=>button.dataset.flightCamera),[mode]);
     press({repeat:true});
     assert.equal(saved.get('camera'),mode);
   }
-  assert.equal(updates,5);
+  assert.equal(updates,6);
+  assert.equal(vm.runInContext('flightOrbit',context),null);
   for(const flag of ['paused','crashed','busy','photo.active']){
     vm.runInContext(`${flag}=true`,context);press();vm.runInContext(`${flag}=false`,context);
   }
   press({ctrlKey:true});press({metaKey:true});press({altKey:true});
   vm.runInContext("document.activeElement.tagName='INPUT'",context);press();
-  assert.equal(updates,5,'typing, repeat, modified shortcuts and inactive flight states do not change the view');
+  assert.equal(updates,6,'typing, repeat, modified shortcuts and inactive flight states do not change the view');
 });
 
 test('flight HUD tracks changing map credits without reserving space for a toolbar',()=>{
@@ -77,7 +78,7 @@ test('menu icon and Esc share pause behavior; P and automatic pause leave settin
     exitPhotoMode:()=>{vm.runInContext('photo.active=false',context);events.push('exit photo');}
   });
   vm.runInContext(`
-    let running=true,paused=false,crashed=false,mapPickerOpen=false,menuStep=3,busy=false;
+    let running=true,paused=false,crashed=false,mapDraft=null,menuStep=3,busy=false;
     const photo={active:false,drag:null},state={heading:40},keys=new Set(),touch=new Set();
     let inspectHeading,inspectElevation,inspectDistance;
   `+app.slice(app.indexOf('function setFlightMenuVisible('),app.indexOf('function syncPhotoControls('))+
@@ -141,7 +142,7 @@ test('Do menu ends live, paused, crashed and photo flights and restores the firs
       updateLandingNotice:()=>{}
     });
     vm.runInContext(`
-      let menuStep=3,running=true,paused=scenario==='paused'||scenario==='photo',crashed=scenario==='crashed';
+      let menuStep=3,running=true,paused=scenario==='paused'||scenario==='photo',crashed=scenario==='crashed',flightOrbit={};
       const state={},keys=new Set(['KeyW']),touch=new Set(['left']);
       const photo={active:scenario==='photo',session:0,savedFov:.8,savedLabels:true,drag:{id:7}};
       function syncControls(){events.push({running,paused,menuStep});}
@@ -154,6 +155,7 @@ test('Do menu ends live, paused, crashed and photo flights and restores the firs
     assert.equal(vm.runInContext('menuStep',context),1,scenario);
     assert.equal(vm.runInContext('keys.size+touch.size',context),0,scenario);
     assert.equal(vm.runInContext('photo.active',context),false,scenario);
+    assert.equal(vm.runInContext('flightOrbit',context),null,scenario);
     assert.equal(vm.runInContext('aircraft.show',context),false,scenario);
     assert.equal(vm.runInContext('viewer.scene.screenSpaceCameraController.enableInputs',context),true,scenario);
     assert.ok($('flightUI').hidden&&$('pauseOverlay').hidden,scenario);
@@ -164,4 +166,39 @@ test('Do menu ends live, paused, crashed and photo flights and restores the firs
     assert.ok(events.includes('crash cleared'),scenario);
     assert.ok(events.some(value=>value.running===false&&value.paused===false&&value.menuStep===1),scenario);
   }
+});
+
+test('free flight commits a globe draft before the start button can launch',()=>{
+  const elements=new Map(),centers=[],launches=[];
+  const $=id=>{
+    if(!elements.has(id))elements.set(id,{focus(){}});
+    return elements.get(id);
+  };
+  const context=vm.createContext({
+    $,isRace:()=>false,showError(){},syncControls(){},overview(){},
+    clearLocationCredits(){},locationSearch:{cancel(){}},
+    selectedPlace:(key,custom)=>key==='custom'?custom:{name:'Brno',lat:49.1951,lon:16.6068},
+    destinationGlobe:{centerOn:place=>centers.push(place)},
+    launches
+  });
+  vm.runInContext(`
+    let mode='google',running=false,busy=false,menuStep=3,locationKey='brno',customLocation=null,mapDraft=null;
+    const randomStartPlaces=[{name:'Brno',lat:49.1951,lon:16.6068},{name:'Fudži',lat:35.36,lon:138.73}];
+    const startFlight=()=>launches.push(selectedPlace(locationKey,customLocation));
+  `+app.slice(app.indexOf('function previewStart('),app.indexOf("$('globeMissionDetails').onclick="))+
+    app.split('\n').find(line=>line.startsWith("$('startButton').onclick=")).split(";$('resumeButton')")[0],context);
+  $('randomStart').onclick();
+  assert.equal(vm.runInContext('mapDraft.name',context),'Fudži');
+  assert.equal(vm.runInContext('locationKey',context),'brno');
+  assert.equal(centers.at(-1).name,'Fudži');
+  $('cancelStartDraft').onclick();
+  assert.equal(vm.runInContext('mapDraft',context),null);
+  assert.equal(centers.at(-1).name,'Brno');
+
+  vm.runInContext("previewStart({name:'Vlastní místo',lat:-37.12345,lon:179.54321})",context);
+  $('startButton').onclick();
+  assert.equal(launches.length,0);
+  assert.equal(vm.runInContext('mapDraft',context),null);
+  $('startButton').onclick();
+  assert.deepEqual({...launches[0]},{name:'Vlastní místo',lat:-37.12345,lon:179.54321});
 });

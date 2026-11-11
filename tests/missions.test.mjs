@@ -1,11 +1,11 @@
-import {missionFeedback,starLabel,starsForMedal} from '../src/mission-performance.js';
+import {missionFeedback,starsForMedal} from '../src/mission-performance.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
 import {createRequire} from 'node:module';
 const C=createRequire(import.meta.url)('cesium');
-import {MISSIONS,getMission,missionStart,TIME_NAMES,WEATHER_NAMES} from '../src/missions.js';
+import {MISSIONS,getMission,getPlayableMission,missionStart,TIME_NAMES,WEATHER_NAMES} from '../src/missions.js';
 import {BrnoRace,gateFrame} from '../src/brno-race.js';
 import {createRaceView} from '../src/race-view.js';
 import {RAD,EARTH} from '../src/flight.js';
@@ -50,6 +50,25 @@ test('changing mission rebuilds Cesium gate geometry and removes the previous ro
   }
   delete globalThis.window;
 });
+test('the dashed route material follows the aircraft position in camera coordinates',()=>{
+  const previousWindow=globalThis.window;globalThis.window={Cesium:C};
+  try{
+    const race=new BrnoRace(),time=C.JulianDate.now();
+    let aircraft={...race.route.gates[0],altitude:race.route.altitude};
+    const origin=C.Cartesian3.fromDegrees(aircraft.lon,aircraft.lat,aircraft.altitude);
+    const camera={viewMatrix:C.Matrix4.fromTranslation(C.Cartesian3.negate(origin,new C.Cartesian3()))};
+    const view=createRaceView({dataSources:new C.DataSourceCollection(),camera},race,()=>aircraft);
+    const property=view.entities.values[0].polyline.material;
+    const material=C.Material.fromType(property.getType(time));
+    assert.equal(material.materials.dashes.uniforms.dashLength,20);
+    assert.ok(material.uniforms.fadeEnd>material.uniforms.fadeStart);
+    property.getValue(time,material.uniforms);
+    assert.equal(C.Cartesian3.magnitude(material.uniforms.aircraftEye),0);
+    aircraft={...aircraft,altitude:aircraft.altitude+1500};
+    property.getValue(time,material.uniforms);
+    assert.ok(Math.abs(C.Cartesian3.magnitude(material.uniforms.aircraftEye)-1500)<.001);
+  }finally{globalThis.window=previousWindow;}
+});
 test('discovery renders the same cone that is used for collection and advances its active marker',()=>{
   const previousWindow=globalThis.window;globalThis.window={Cesium:C};
   try{
@@ -72,7 +91,7 @@ test('discovery renders the same cone that is used for collection and advances i
 
 test('the final discovery is saved before the mission-complete notice is shown',()=>{
   const app=fs.readFileSync(new URL('../src/app.js',import.meta.url),'utf8'),route=getMission('brno-discovery').route,saved=[],messages=[];
-  const context=vm.createContext({objectiveType,usesScore,discoveryMessage,missionFeedback,
+  const context=vm.createContext({objectiveType,usesScore,discoveryMessage,missionFeedback,achievementCollection:()=>({items:[]}),
     geographyGuide:{collectPlace:id=>{saved.push(id);return{isNew:true,saved:true};}},
     engineAudio:{gatePassed(){}},recordMissionResult:()=>({medal:'bronze'}),currentMission:()=>getMission('brno-discovery'),showMissionResult:()=>{},syncControls:()=>{},
     race:{route,next:5,score:100,update:()=>[{index:4,status:'finished'}],elapsed:()=>0},
@@ -83,21 +102,51 @@ test('the final discovery is saved before the mission-complete notice is shown',
   vm.runInContext('updateRace()',context);
   assert.deepEqual(saved,['cs:26471']);assert.match(messages[0],/Uloženo do sbírky: Veveří/);assert.match(messages[0],/Mise splněna/);
 });
-test('mission result shows medal, XP, unlocks and pauses until the player chooses an action',()=>{
+
+test('passing the second gate triggers the mission engine failure once per attempt',()=>{
+  const app=fs.readFileSync(new URL('../src/app.js',import.meta.url),'utf8');
+  const updateCode=app.slice(app.indexOf('function updateRace(){'),app.indexOf('function showMissionResult('));
+  for(const [model,failure] of [['airliner','right'],['highWing','single']]){
+    const source=getPlayableMission('sfo-arrival',model).route;
+    const route=resolveRouteSurface(source,routeSurfacePoints(source).map(()=>0));
+    const race=new BrnoRace(route),messages=[];
+    const context=vm.createContext({race,objectiveType,isRace:()=>true,engineAudio:{gatePassed(){}},notice:text=>messages.push(text)});
+    vm.runInContext('let state,crashed=false;'+updateCode,context);
+    let elapsed=0;
+    const pass=index=>{
+      for(const distance of [-30,30]){
+        context.next={...gatePoint(route,index,distance,elapsed+=1),altitude:route.gates[index].altitude,model,engineFailure:vm.runInContext('state?.engineFailure',context)};
+        vm.runInContext('state=next;updateRace()',context);
+      }
+    };
+    vm.runInContext('let surfaceHeight=0;',context);
+    pass(0);
+    assert.equal(vm.runInContext('state.engineFailure',context),undefined);
+    pass(1);
+    assert.equal(vm.runInContext('state.engineFailure',context),failure);
+    pass(2);
+    assert.equal(messages.filter(text=>/motor/i.test(text)).length,1);
+    race.reset();
+    vm.runInContext('state=undefined;',context);
+    pass(0);pass(1);
+    assert.equal(vm.runInContext('state.engineFailure',context),failure);
+    assert.equal(messages.filter(text=>/motor/i.test(text)).length,2);
+  }
+});
+test('mission result shows the flown stars and next flight while paused',()=>{
   const app=fs.readFileSync(new URL('../src/app.js',import.meta.url),'utf8'),elements=new Map(),calls=[];
-  const $=id=>{if(!elements.has(id))elements.set(id,{hidden:true,dataset:{},focus(){calls.push('focus:'+id);}});return elements.get(id);};
-  const context=vm.createContext({$,starLabel,starsForMedal,MEDAL_NAMES:{bronze:'Bronz',silver:'Stříbro',gold:'Zlato'},getMission,formatRaceTime:seconds=>String(seconds),pauseFlight:value=>calls.push('pause:'+value),currentMission:()=>getMission('brno-landing')});
-  vm.runInContext(app.slice(app.indexOf('function showMissionResult('),app.indexOf('function syncControls(){')),context);
-  vm.runInContext(`showMissionResult({reward:{medal:'gold',xpGained:100,xp:100,level:2,newMissions:['brno-discovery'],newAircraft:['lowWing']},result:91,scored:true,record:true,feedback:{score:91,record:'Nový osobní rekord',praise:'Přesné přistání.',advice:'Zkus boční vítr.'}})`,context);
+  const stars=Array.from({length:3},()=>({dataset:{}}));
+  const $=id=>{if(!elements.has(id))elements.set(id,{hidden:true,dataset:{},classList:{toggle(){},remove(){},add(){}},setAttribute(){},querySelectorAll:()=>stars,focus(){calls.push('focus:'+id);},offsetWidth:520});return elements.get(id);};
+  const context=vm.createContext({$,starsForMedal,MEDAL_NAMES:{bronze:'Bronz',silver:'Stříbro',gold:'Zlato'},getMission,pauseFlight:value=>calls.push('pause:'+value),currentMission:()=>getMission('brno-landing')});
+  vm.runInContext(app.slice(app.indexOf('function showMissionResult('),app.indexOf('function syncControls(')),context);
+  vm.runInContext(`showMissionResult({reward:{medal:'gold',rankUp:false,saved:true,newMissions:['brno-discovery'],nextMissionId:'brno-discovery'}})`,context);
   assert.equal($('missionResult').hidden,false);
-  assert.equal($('resultMedal').textContent,'★★★ · Zlato');
-  assert.equal($('resultScore').textContent,'91 / 100 bodů');
-  assert.equal($('resultRecord').textContent,'Nový osobní rekord');
-  assert.match($('resultFeedback').textContent,/Zkus boční vítr/);
-  assert.match($('resultXp').textContent,/\+100 XP · Úroveň 2/);
+  assert.deepEqual(stars.map(star=>star.dataset.earned),['true','true','true']);
+  assert.equal($('resultMedalName').textContent,'Zlato');
+  assert.equal($('resultPromotion').hidden,true);
   assert.match($('resultUnlocks').textContent,/Pět tváří Brna/);
-  assert.match($('resultUnlocks').textContent,/Citation/);
-  assert.deepEqual(calls,['pause:true','focus:resultContinue']);
+  assert.match($('resultNext').textContent,/Pět tváří Brna/);
+  assert.deepEqual(calls,['pause:true','focus:resultNext']);
 });
 test('mission selection fixes conditions, restores free-flight choices and preserves the selected free location',()=>{
   const app=fs.readFileSync(new URL('../src/app.js',import.meta.url),'utf8');
@@ -113,7 +162,8 @@ test('mission selection fixes conditions, restores free-flight choices and prese
   vm.runInContext("chooseMission('brno-discovery')",context);
   assert.equal(vm.runInContext('missionId',context),'brno-discovery');
   recordMissionCompletion('brno-landing',storage);
-  vm.runInContext("chooseMission('brno-discovery')",context);assert.equal(vm.runInContext('missionId',context),'brno-discovery');assert.equal($('timeOfDay').value,'evening');
+  vm.runInContext("chooseMission('brno-discovery')",context);assert.equal(vm.runInContext('missionId',context),'brno-discovery');
+  assert.equal($('timeOfDay').value,'evening');assert.equal($('weather').value,'partly');
   assert.equal(vm.runInContext('race.route.id',context),getMission('brno-discovery').route.id);
   $('gameMode').value='free';$('gameMode').onchange();
   assert.equal($('timeOfDay').value,'evening');assert.equal($('weather').value,'haze');
@@ -128,6 +178,8 @@ test('the primary action on a locked preview selects the next unfinished Brno mi
     isMissionUnlocked:id=>isMissionUnlocked(id,storage),isRace:()=>true,chooseMission:id=>selected.push(id),
     startFlight:()=>assert.fail('a locked preview must never start a flight'),restart(){},endFlight(){},toggleSound(){}});
   vm.runInContext(`let running=false,crashed=false,menuStep=3,missionId='prague';`+app.split('\n').find(line=>line.startsWith("$('startButton').onclick=")),context);
+  $('startButton').onclick();assert.equal(selected.at(-1),'first-takeoff');
+  recordMissionCompletion('first-takeoff',storage);
   $('startButton').onclick();assert.equal(selected.at(-1),'brno-landing');
   recordMissionCompletion('brno-landing',storage);
   $('startButton').onclick();assert.equal(selected.at(-1),'brno-discovery');

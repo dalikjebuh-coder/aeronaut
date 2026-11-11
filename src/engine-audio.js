@@ -1,14 +1,70 @@
 import {clamp} from './flight.js';
 import {createRadioStatic} from './radio-static.js';
 
-const recordings={propeller:'/audio/propeller.ogg',jet:'/audio/jet-cruise.wav'};
+const recordings={radio:'/audio/pilot-tower-radio.mp3',explosion:'/audio/explosion.mp3',propeller:'/audio/propeller.ogg',jet:'/audio/jet-cruise.wav'};
 
 export function createEngineAudio(){
   let context,master,radioStatic,enabled=true,flying=false,model='lowWing',throttle=.7,speed=0;
+  let explosionBuffer,explosionSource;
+  let radioBuffer,radioSource,radioRequested=false;
   const tracks=new Map();
   const runwaySounds=new Set();
 
   function stopRunwaySounds(){for(const source of runwaySounds){try{source.stop();}catch{}}runwaySounds.clear();}
+
+  function stopRadio(){
+    radioRequested=false;
+    if(!radioSource)return;
+    const source=radioSource;
+    radioSource=null;
+    source.stop();
+  }
+
+  function startRadio(){
+    if(!radioRequested||!enabled||!radioBuffer||context?.state!=='running')return;
+    radioRequested=false;
+    const source=context.createBufferSource();
+    const volume=context.createGain();
+    source.buffer=radioBuffer;
+    volume.gain.value=.49;
+    // Let the recording finish even when the landing result pauses the engine.
+    source.connect(volume);
+    volume.connect(context.destination);
+    source.onended=()=>{
+      if(radioSource===source)radioSource=null;
+      source.disconnect();
+      volume.disconnect();
+    };
+    radioSource=source;
+    source.start();
+  }
+
+  function playRadio(){
+    stopRadio();
+    if(!enabled||!context)return;
+    radioRequested=true;
+    startRadio();
+  }
+
+  function stopExplosion(){
+    if(!explosionSource)return;
+    explosionSource.stop();
+    explosionSource=null;
+  }
+
+  function explosion(){
+    if(!enabled||!explosionBuffer||context.state!=='running'||explosionSource)return;
+    const source=context.createBufferSource();
+    source.buffer=explosionBuffer;
+    // The engine bus fades out at impact, so the explosion has its own output.
+    source.connect(context.destination);
+    source.onended=()=>{
+      if(explosionSource===source)explosionSource=null;
+      source.disconnect();
+    };
+    explosionSource=source;
+    source.start();
+  }
 
   // Original synthesized rubber chirp: falling harmonics and a little friction noise.
   // Generated only at wheel contact/release; no external recording or network load.
@@ -32,12 +88,14 @@ export function createEngineAudio(){
     source.start(start);source.stop(start+duration+.02);
   }
 
-  async function loadTrack(kind,url){
+  async function loadRecording(kind,url){
     try{
       const response=await fetch(url);
       if(!response.ok)throw new Error(`Audio ${response.status}`);
       const buffer=await context.decodeAudioData(await response.arrayBuffer());
       if(context.state==='closed')return;
+      if(kind==='radio'){radioBuffer=buffer;startRadio();return;}
+      if(kind==='explosion'){explosionBuffer=buffer;return;}
       const source=context.createBufferSource(),gain=context.createGain();
       source.buffer=buffer;source.loop=true;gain.gain.value=0;
       source.connect(gain);gain.connect(master);source.start();
@@ -52,7 +110,7 @@ export function createEngineAudio(){
     if(!AudioContext)return;
     context=new AudioContext();
     master=context.createGain();master.gain.value=0;master.connect(context.destination);
-    for(const [kind,url] of Object.entries(recordings))loadTrack(kind,url);
+    for(const [kind,url] of Object.entries(recordings))loadRecording(kind,url);
   }
 
   function update(){
@@ -78,10 +136,10 @@ export function createEngineAudio(){
   }
 
   return {
-    unlock(){initialize();if(context?.state==='suspended')context.resume().catch(()=>{});},
-    play(){flying=true;update();},
+    unlock(){initialize();if(context?.state==='suspended')context.resume().then(startRadio).catch(()=>{});},
+    play(){stopExplosion();flying=true;update();},
     pause(){flying=false;stopRunwaySounds();update();},
-    stop(){flying=false;stopRunwaySounds();radioStatic?.cancel();update();},
+    stop(){flying=false;stopRunwaySounds();stopExplosion();stopRadio();radioStatic?.cancel();update();},
     setModel(value){model=value;update();},
     setThrottle(value,velocity){throttle=value;speed=velocity;update();},
     gatePassed(finished=false){tone(finished?660:580);tone(finished?990:820,.11,.18);},
@@ -91,8 +149,10 @@ export function createEngineAudio(){
       radioStatic??=createRadioStatic(context);radioStatic.start(speaker);
     },
     tireSqueal,
+    radio:{play:playRadio,stop:stopRadio},
+    explosion,
     stallWarning(){tone(330,0,.18,.2);},
-    toggle(){enabled=!enabled;if(!enabled){stopRunwaySounds();radioStatic?.cancel();}update();return enabled;},
+    toggle(){enabled=!enabled;if(!enabled){stopRunwaySounds();stopExplosion();stopRadio();radioStatic?.cancel();}update();return enabled;},
     get enabled(){return enabled;}
   };
 }

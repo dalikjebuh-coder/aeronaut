@@ -87,8 +87,8 @@ test('turbulence is explained in the information panel alongside safety warnings
   const app=fs.readFileSync(new URL('../src/app.js',import.meta.url),'utf8'),elements=new Map();
   const $=id=>{if(!elements.has(id))elements.set(id,{hidden:true,dataset:{},textContent:'',value:'overcast'});return elements.get(id);};
   $('notice').textContent='Pokyny k přistání';let beeps=0;
-  const context=vm.createContext({$,flightFeedback,turbulence:createTurbulence({random:()=>0}),engineAudio:{stallWarning:()=>beeps++},initialFlight});
-  vm.runInContext(`let running=true,paused=false,crashed=false,busy=false,cameraMotion=true,surfaceHeight=0,lastStallBeep=-Infinity,turbulenceFeedback;const state=initialFlight({lat:49,lon:16});`+
+  const context=vm.createContext({$,flightFeedback,turbulence:createTurbulence({random:()=>0}),engineAudio:{stallWarning:()=>beeps++},initialFlight,recordCloudTurbulence:()=>false});
+  vm.runInContext(`let running=true,paused=false,crashed=false,busy=false,cameraMotion=true,surfaceHeight=0,lastStallBeep=-Infinity,turbulenceFeedback,cloudTurbulenceSeen=false;const state=initialFlight({lat:49,lon:16});`+
     app.slice(app.indexOf('function updateFlightFeedback(){'),app.indexOf('function input(){')),context);
   vm.runInContext('state.speed=100;state.rollVelocity=2;updateFlightFeedback()',context);
   assert.ok(vm.runInContext('flightFeedback(state).maneuver>0',context));

@@ -36,9 +36,13 @@ test('map distinguishes discovery, gate crossings, low flight and the landing zo
   assert.notEqual(renderMissionMap(getMission('brno')),renderMissionMap(getMission('brno-discovery')));
 });
 
-test('map is outside collapsed rules and escapes mission labels before writing SVG',()=>{
+test('flight plan is open by default and mission labels are escaped in the map',()=>{
   const html=fs.readFileSync(new URL('../src/index.html',import.meta.url),'utf8');
-  assert.ok(html.indexOf('id="raceRouteMap"')<html.indexOf('<details class="horizon-mission-more"'));
+  const app=fs.readFileSync(new URL('../src/app.js',import.meta.url),'utf8');
+  assert.match(html,/<details id="missionMore" class="horizon-mission-more" open>/);
+  assert.match(app,/function openMissionBriefing\(\)\s*\{[^}]*\$\('missionMore'\)\.open=true;/);
+  assert.ok(html.indexOf('id="raceRouteMap"')>html.indexOf('id="missionMore"'));
+  assert.ok(html.indexOf('id="missionBronzeTarget"')<html.indexOf('id="missionBronzeXp"'));
   const mission=getMission('brno');
   const svg=renderMissionMap({...mission,title:'<script>"',route:{...mission.route,gates:mission.route.gates.map(g=>({...g,name:'<script>"'}))}});
   assert.ok(!svg.includes('<script>'));

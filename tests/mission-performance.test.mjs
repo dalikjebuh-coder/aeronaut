@@ -5,6 +5,7 @@ import {missionScore,missionFeedback,missionRecordKey,readMissionRecord,starsFor
 import {gradeMission,medalTargets,missionProgress,recordMissionResult,recordMissionCompletion,BRNO_MISSION_IDS} from '../src/mission-progression.js';
 import {landingPenalties} from '../src/mission-objectives.js';
 import {RAD} from '../src/flight.js';
+import {CAREER_IDS} from '../src/campaign.js';
 
 function storage(){const values=new Map();return{getItem:key=>values.get(key)??null,setItem:(key,value)=>values.set(key,String(value)),key:i=>[...values.keys()][i]??null,get length(){return values.size;}};}
 
@@ -25,22 +26,21 @@ test('score thresholds match stars for every mission and aircraft without adding
 });
 
 test('discovery awards all stars at any pace; replay never farms XP or reduces best stars',()=>{
-  const store=storage();recordMissionCompletion('brno-landing',store);
+  const store=storage();recordMissionCompletion('first-takeoff',store);recordMissionCompletion('brno-landing',store);
   const mission=getMission('brno-discovery');
   const first=recordMissionResult(mission,'highWing',7200,store);
   assert.equal(first.stars,3);assert.equal(first.xpGained,100);assert.equal(first.saved,true);
   assert.equal(recordMissionResult(mission,'highWing',1,store).xpGained,0);
-  assert.equal(missionProgress(store).stars,4);
+  assert.equal(missionProgress(store).stars,5);
   assert.match(missionFeedback(mission,'highWing',7200).advice,/vlastním tempem/);
 });
 
 test('career continues after all aircraft unlock and persists via existing mission medals',()=>{
   const store=storage();
   assert.equal(missionProgress(store).rank,'Kadet');
-  for(const id of BRNO_MISSION_IDS)recordMissionCompletion(id,store);
-  for(const mission of MISSIONS)recordMissionResult(mission,'highWing',['landing','lowflight'].includes(mission.route.objective?.type)?100:1,store);
+  for(const id of CAREER_IDS){const mission=getMission(id);recordMissionResult(mission,'highWing',['landing','lowflight'].includes(mission.route.objective?.type)?100:1,store);}
   const progress=missionProgress(store);
-  assert.equal(progress.level,4);assert.equal(progress.rank,'Legenda oblohy');
+  assert.equal(progress.level,4);assert.equal(progress.rank,'Šéfpilot');
   assert.equal(progress.careerLevel,6);assert.equal(progress.nextCareerXp,null);
   assert.equal(progress.stars,MISSIONS.length*3);assert.equal(progress.xp,MISSIONS.length*100);
   assert.deepEqual(missionProgress(store),progress);
@@ -75,6 +75,6 @@ test('landing advice identifies the actual greatest loss, and failed storage is 
   assert.match(missionFeedback(mission,'highWing',57,{landing:penalties}).advice,/střed dráhy/);
   assert.match(missionFeedback(mission,'highWing',57,{landing:{...penalties,sink:.4}}).advice,/zmírni klesání/);
   const blocked={getItem:()=>null,setItem(){throw Error('quota');},length:0};
-  const reward=recordMissionResult(mission,'highWing',90,blocked);
+  const reward=recordMissionResult(getMission('first-takeoff'),'highWing',90,blocked);
   assert.equal(reward.saved,false);assert.equal(reward.xpGained,0);
 });

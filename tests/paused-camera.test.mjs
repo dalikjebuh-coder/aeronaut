@@ -2,13 +2,17 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
+import {flightCameraPose} from '../src/flight-camera.js';
 
 const source=fs.readFileSync(new URL('../src/app.js',import.meta.url),'utf8');
 function setup(){
   const listeners=new Map(),captures=new Set(),canvas={},classes=new Set();let updates=0;
   const container={addEventListener:(name,callback)=>listeners.set(name,callback),setPointerCapture:id=>captures.add(id),hasPointerCapture:id=>captures.has(id),releasePointerCapture:id=>captures.delete(id),getBoundingClientRect:()=>({width:1000,height:500})};
-  const context=vm.createContext({$:()=>container,viewer:{canvas},document:{body:{classList:{add:name=>classes.add(name),remove:name=>classes.delete(name)}}},updateCamera:()=>updates++,syncPhotoControls:()=>{},aircraft:{chaseDistance:48}});
-  vm.runInContext('let running=true,paused=true,crashed=false,busy=false,inspectHeading=0,inspectElevation=.3,inspectDistance=110;const photo={active:false,drag:null};'+source.slice(source.indexOf('function stopInspectDrag(){'),source.indexOf('function pauseFlight('))+source.slice(source.indexOf("    $('cesiumContainer').addEventListener('pointerdown'"),source.indexOf('    locationSearch=createLocationSearch')),context);
+  const context=vm.createContext({$:()=>container,viewer:{canvas},document:{body:{classList:{add:name=>classes.add(name),remove:name=>classes.delete(name)}}},updateCamera:()=>updates++,syncPhotoControls:()=>{},aircraft:{chaseDistance:48},flightCameraPose});
+  vm.runInContext(`let running=true,paused=true,crashed=false,busy=false,inspectHeading=0,inspectElevation=.3,inspectDistance=110,flightOrbit=null;
+    const photo={active:false,drag:null},state={heading:0,pitch:0,speed:60},flightCameraMode='front';`+
+    source.slice(source.indexOf('function stopInspectDrag(){'),source.indexOf('function pauseFlight('))+
+    source.slice(source.indexOf("    $('cesiumContainer').addEventListener('pointerdown'"),source.indexOf('    locationSearch=createLocationSearch')),context);
   return {context,captures,classes,get updates(){return updates;},read:expression=>vm.runInContext(expression,context),send:(name,extra={})=>listeners.get(name)({pointerId:1,button:0,target:canvas,clientX:100,clientY:100,preventDefault(){},...extra})};
 }
 test('paused camera ignores hovering and orbits only while dragging the canvas',()=>{
@@ -31,5 +35,28 @@ test('cancel, lost capture and focus cleanup terminate dragging; photo mode keep
   run.send('pointerdown');run.read('stopInspectDrag()');assert.equal(run.read('photo.drag'),null);
   run.read('photo.active=true');run.send('pointerdown');run.send('pointermove',{clientX:150});assert.equal(run.updates,1);
   run.send('pointerup');run.send('wheel',{deltaY:-100,deltaMode:0});assert.ok(run.read('inspectDistance')<110);
-  run.read('paused=false');run.send('pointerdown');assert.equal(run.read('photo.drag'),null);
+  run.read('paused=false;photo.active=false');run.send('wheel',{deltaY:-100,deltaMode:0});assert.equal(run.updates,2);
+});
+
+test('a finger can orbit during flight and the chosen angle survives release and a separate pause drag',()=>{
+  const run=setup();
+  run.read('paused=false');
+  run.send('pointerdown',{pointerType:'touch',pointerId:2,isPrimary:false});
+  run.send('pointermove',{pointerType:'touch',pointerId:2});
+  assert.equal(run.read('flightOrbit'),null,'tapping keeps the preset');
+  run.send('pointermove',{pointerType:'touch',pointerId:2,clientX:350,clientY:0});
+  assert.equal(run.updates,1);
+  assert.equal(run.read('flightOrbit.headingOffset'),Math.PI/2);
+  assert.ok(run.read('flightOrbit.elevation')<0);
+  const orbit=run.read('flightOrbit');
+  const elevation=orbit.elevation;
+  run.send('pointerup',{pointerId:2});
+  assert.equal(run.captures.size,0);
+  run.send('pointermove',{pointerId:2,clientY:300});
+  assert.equal(run.updates,1);
+  run.read('paused=true');
+  run.send('pointerdown');run.send('pointermove',{clientX:250,clientY:200});run.send('pointerup');
+  assert.equal(run.read('flightOrbit'),orbit);
+  assert.equal(orbit.elevation,elevation);
+  assert.equal(run.updates,2);
 });

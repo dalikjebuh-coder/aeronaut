@@ -41,17 +41,20 @@ export function selectFlightAircraft(s,model){
   s.pitchVelocity=0;s.rollVelocity=0;
   return s;
 }
-export function initialFlight({lat,lon,altitude=600,heading=0,model='lowWing',onGround=false,wind=null,engineLimit=1}) {
+export function initialFlight({lat,lon,altitude=600,heading=0,model='lowWing',onGround=false,wind=null,engineLimit=1,gustStrength=0}) {
   const profile=aircraftProfile(model);
-  return selectFlightAircraft({lat,lon,altitude,heading:heading*RAD,pitch:0,pitchVelocity:0,roll:0,speed:onGround?0:profile.cruiseSpeed,throttle:onGround?.85:Math.min(.65,engineLimit),enginePower:onGround?.85:Math.min(.65,engineLimit),elapsed:0,distance:0,verticalSpeed:0,onGround,wind,engineLimit},model);
+  return selectFlightAircraft({lat,lon,altitude,heading:heading*RAD,pitch:0,pitchVelocity:0,roll:0,speed:onGround?0:profile.cruiseSpeed,throttle:onGround?.85:Math.min(.65,engineLimit),enginePower:onGround?.85:Math.min(.65,engineLimit),elapsed:0,distance:0,verticalSpeed:0,onGround,wind,engineLimit,gustStrength},model);
 }
 // Deliberately forgiving, assisted flight dynamics; distances are metres and time seconds.
 export function stepFlight(s, input, dt) {
   dt = clamp(dt,0,0.05);
   const profile=aircraftProfile(s.model);
   s.throttle=clamp(s.throttle+(input.throttle || 0)*dt*0.28,0,s.engineLimit??1);
-  s.enginePower=(s.enginePower??s.throttle)+(s.throttle-(s.enginePower??s.throttle))*(1-Math.exp(-dt*profile.engineResponse));
+  const availablePower=s.engineFailure==='right'?.55:s.engineFailure==='single'?.60:1;
+  const power=s.enginePower??s.throttle;
+  s.enginePower=power+(s.throttle*availablePower-power)*(1-Math.exp(-dt*profile.engineResponse));
   if(s.onGround){
+    s.gustIntensity=0;
     const target=profile.takeoffSpeed*1.3*s.enginePower*s.enginePower;
     s.speed=clamp(s.speed+clamp((target-s.speed)*1.4,-profile.groundBraking,profile.groundAcceleration)*dt,0,profile.maxSpeed);
     s.roll=0;s.rollVelocity=0;s.pitch=0;s.pitchVelocity=0;s.verticalSpeed=0;
@@ -63,11 +66,16 @@ export function stepFlight(s, input, dt) {
     s.elapsed+=dt;s.distance+=distance;
     return s;
   }
-  const targetRoll=(input.roll || 0)*profile.maxBank*RAD;
+  const t=s.elapsed;
+  const gust=(s.gustStrength||0)*(.5+.5*Math.sin(t*.43))**2;
+  const shake=s.engineFailure?1:0;
+  const yaw=s.engineFailure==='right'?s.enginePower*2.6*RAD:0;
+  s.gustIntensity=gust;
+  const targetRoll=clamp((input.roll||0)*profile.maxBank+(gust*16*Math.sin(t*2.9)+shake*5*Math.sin(t*7.1)),-profile.maxBank,profile.maxBank)*RAD;
   const previousRoll=s.roll;
   s.roll+=(targetRoll-s.roll)*(1-Math.exp(-dt*profile.rollResponse));
   s.rollVelocity=dt>0?(s.roll-previousRoll)/dt:0;
-  const targetPitchVelocity=(input.pitch || 0)*profile.pitchRate*RAD;
+  const targetPitchVelocity=((input.pitch||0)*profile.pitchRate+gust*8*Math.sin(t*3.7)+shake*3*Math.sin(t*9.3))*RAD;
   s.pitchVelocity=(s.pitchVelocity||0)+(targetPitchVelocity-(s.pitchVelocity||0))*(1-Math.exp(-dt*profile.pitchResponse));
   s.pitch=clamp(s.pitch+s.pitchVelocity*dt,-profile.pitchDown*RAD,profile.pitchUp*RAD);
   if (!input.pitch) s.pitch*=Math.exp(-dt*profile.pitchReturn);
@@ -75,11 +83,15 @@ export function stepFlight(s, input, dt) {
   const acceleration=clamp((targetSpeed-s.speed)*profile.speedResponse,-profile.deceleration,profile.acceleration)-9.81*Math.sin(s.pitch);
   s.speed=clamp(s.speed+acceleration*dt,profile.minimumSpeed,profile.maxSpeed);
   if(s.speed<profile.stallSpeed)s.pitch=clamp(s.pitch-dt*.12,-profile.pitchDown*RAD,profile.pitchUp*RAD);
-  s.heading=(s.heading+9.81*Math.tan(s.roll)/Math.max(s.speed,20)*dt+Math.PI*2)%(Math.PI*2);
+  s.heading=(s.heading+(9.81*Math.tan(s.roll)/Math.max(s.speed,20)+yaw)*dt+Math.PI*2)%(Math.PI*2);
   const distance=s.speed*Math.cos(s.pitch)*dt;
   s.lat=clamp(s.lat+Math.cos(s.heading)*distance/EARTH/RAD,-85,85);
   s.lon=((s.lon+Math.sin(s.heading)*distance/(EARTH*Math.cos(s.lat*RAD))/RAD+540)%360)-180;
-  if(s.wind){s.lat+=s.wind.north*dt/EARTH/RAD;s.lon+=s.wind.east*dt/(EARTH*Math.cos(s.lat*RAD))/RAD;}
+  if(s.wind||gust){
+    const north=(s.wind?.north||0)+gust*5*Math.sin(t*1.7);
+    const east=(s.wind?.east||0)+gust*6*Math.cos(t*1.3);
+    s.lat+=north*dt/EARTH/RAD;s.lon+=east*dt/(EARTH*Math.cos(s.lat*RAD))/RAD;
+  }
   s.verticalSpeed=s.speed*Math.sin(s.pitch);
   s.altitude+=s.verticalSpeed*dt;
   s.elapsed+=dt;s.distance+=distance;

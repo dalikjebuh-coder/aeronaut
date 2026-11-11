@@ -39,9 +39,20 @@ test('an existing Sun primitive is hidden for overcast and restored for clear sk
 
 test('the Sun is explicitly created and stays hidden at night',()=>{
   assert.match(source,/viewer.scene.sun=new C.Sun\(\)/);
-  const {controls,scene,apply}=environment({show:true});
+  const {controls,scene,tint,apply}=environment({show:true});
   controls.timeOfDay.value='night';apply();assert.equal(scene.sun.show,false);
+  for(const weather of ['clear','partly','haze']){
+    controls.weather.value=weather;apply();
+    assert.equal(tint.uniforms.stars,1,weather);
+    assert.equal(tint.uniforms.moon,1,weather);
+  }
+  controls.weather.value='overcast';apply();
+  assert.equal(tint.uniforms.stars,0);
+  assert.equal(tint.uniforms.moon,0);
+  controls.weather.value='clear';
   controls.timeOfDay.value='morning';apply();assert.equal(scene.sun.show,true);
+  assert.equal(tint.uniforms.stars,0);
+  assert.equal(tint.uniforms.moon,0);
 });
 
 test('morning and evening keep the Sun low above the horizon',()=>{

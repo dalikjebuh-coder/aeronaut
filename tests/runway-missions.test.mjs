@@ -16,11 +16,12 @@ function atGate(route,index,along,elapsed){
 }
 function storage(){const values=new Map();return{getItem:key=>values.get(key)??null,setItem:(key,value)=>values.set(key,String(value)),key:index=>[...values.keys()][index],get length(){return values.size;}};}
 
-test('all eight runway missions are available, illustrated and complete through the shared result flow',()=>{
+test('all runway routes complete and the active takeoff mission awards a medal',()=>{
   assert.equal(RUNWAY_MISSIONS.length,8);
   const store=storage();
   for(const mission of RUNWAY_MISSIONS){
-    assert.ok(missionProgress(store).unlocked.has(mission.id));
+    const active=mission.id==='first-takeoff';
+    assert.equal(missionProgress(store).unlocked.has(mission.id),active);
     assert.ok(fs.existsSync(new URL(`../src/images/${mission.id}-mission-v1.jpg`,import.meta.url)));
     const route=flat(getMission(mission.id).route),race=new BrnoRace(route);
     let time=0;
@@ -54,10 +55,11 @@ test('all eight runway missions are available, illustrated and complete through 
     const result=route.objective.type==='landing'?race.score:race.elapsed(time);
     assert.ok(gradeMission(mission,'highWing',result));
     const reward=recordMissionResult(mission,'highWing',result,store);
-    assert.ok(reward?.bestMedal);
+    if(active)assert.ok(reward?.bestMedal);
+    else assert.equal(reward,null);
     race.reset();assert.equal(race.next,0);assert.equal(race.status,'ready');
   }
-  assert.equal(missionProgress(store).completed.size,8);
+  assert.equal(missionProgress(store).completed.size,1);
 });
 
 test('takeoff starts on the runway and can be flown through both gates with the trainer',()=>{

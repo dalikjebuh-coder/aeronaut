@@ -41,7 +41,47 @@ export function missionVariant(mission,level='easy'){
   return{...mission,level:difficulty,route:{...mission.route,id:mission.route.id+'-'+difficulty+'-v1',radius,gates}};
 }
 
-// The circle's lowest point stays above all three surface samples across its width.
+const challengeDetails={
+  prague:{skim:[1,2],brief:'Sestup k Vltavě a proleť nízko podél nábřeží. Před zatáčkami zpomal.'},
+  sf:{brief:'Sestup nad vodu. Poslední brána vede pod středním rozpětím Golden Gate.'},
+  paris:{skim:[2,4],brief:'V noci sleduj Seinu. Nízké brány tě povedou těsně nad řekou.'},
+  nyc:{skim:[1,2,3],brief:'Sestup do úzkých průletů na Manhattanu. Srovnej směr včas a mezi vysokými budovami zpomal.'},
+  matterhorn:{skim:[2,3],wind:{north:-4,east:6},gustStrength:.85,brief:'Pod hřebenem se drž u svahu. V horských poryvech průběžně koriguj náklon i výšku.'},
+  grandcanyon:{skim:[1,3],brief:'Sestup ke Coloradu a proleť nízko mezi skalními stěnami. Další zatáčku si připrav před branou.'},
+  'canyon-patrol':{minimumScore:55,brief:'Sleduj řeku v úzkém výškovém pásmu i mezi branami. Připrav si další zatáčku předem.'},
+  madeira:{wind:{north:6,east:-8},gustStrength:1,brief:'U pobřeží fouká silný nárazový vítr. Před dráhou 05 srovnej osu a průběžně vyrovnávej snos.'},
+  innsbruck:{wind:{north:-3,east:-5},gustStrength:.8,brief:'V údolí Innu čekej silné poryvy. Udrž řízený sestup a po dosednutí zastav před koncem dráhy.'},
+  'sfo-arrival':{engineFailureAfterGate:1,brief:'Při nočním příletu s náhradními díly se ozve varování motoru. Hlídej rychlost a dokonči přiblížení na dráhu 28R.'},
+  'cape-peninsula':{engineFailureAfterGate:1,brief:'Mapuješ pobřeží u Stolové hory a motor začíná kolísat. Než zamíříš ke svahu, připrav si výškovou rezervu.'},
+  'monument-valley':{skim:[1,2,3],minimumScore:55,brief:'Proleť nízko mezi skalními věžemi a zůstaň v koridoru i při stoupání k poslední bráně.'},
+  iguazu:{wind:{north:5,east:4},gustStrength:.75,brief:'Nad kaskádami čekej boční nárazy. Drž výšku a koriguj snos podél řeky.'}
+};
+
+export function challengeRoute(mission,model){
+  const {route}=mission,details=challengeDetails[mission.id]||{};
+  const {skim,minimumScore,...scenario}=details;
+  const type=route.objective?.type;
+  const aircraftScale=model==='airliner'?1.45:model==='lowWing'?1.15:1;
+  const radiusScale=(mission.fixedRoute ? .58 : 1)*aircraftScale;
+  const gates=route.gates.map((gate,index)=>{
+    if(gate.kind==='landing'||gate.kind==='touch-and-go'||gate.underpass)return gate;
+    const radius=Math.round((gate.radius??route.radius)*radiusScale);
+    if(skim?.includes(index))return{...gate,radius,clearance:radius,groundSkim:true};
+    return{...gate,radius};
+  });
+  let objective=route.objective;
+  if(type==='landing'){
+    objective={...objective,halfLength:objective.halfLength*.75,halfWidth:objective.halfWidth*.8,headingTolerance:13};
+  }else if(type==='lowflight'){
+    const {minHeight,maxHeight,corridor}=objective;
+    const rockSlalom=mission.id==='monument-valley';
+    objective={...objective,minHeight:rockSlalom?20:minHeight,maxHeight:rockSlalom?240:maxHeight,
+      corridor:Math.round(corridor*(mission.fixedRoute ? .56 : .8)),minimumScore:minimumScore??40};
+  }
+  return{...route,...scenario,id:route.id+'-challenge-v1',terrainFollowing:true,objective,gates};
+}
+
+// Sample across each gate so its opening clears terrain even on uneven ground.
 export function routeSurfacePoints(route){
   return route.gates.flatMap((gate,index)=>{
     if(['landing','touch-and-go'].includes(gate.kind)||route.objective?.type==='sightseeing')return[{lat:gate.lat,lon:gate.lon}];
@@ -56,7 +96,8 @@ export function resolveRouteSurface(route,heights){
     const count=gate.surfaceReference||['landing','touch-and-go'].includes(gate.kind)||route.objective?.type==='sightseeing'?1:3,samples=heights.slice(cursor,cursor+=count);
     if(samples.length!==count||samples.some(value=>!Number.isFinite(value)))throw new Error('Povrch trasy není dostupný');
     const surface=Math.max(...samples),radius=gate.radius??route.radius;
-    return{...gate,surface,altitude:surface+(['landing','touch-and-go'].includes(gate.kind)?3:Math.max(gate.clearance,radius+8))};
+    const minimumClearance=radius+(gate.groundSkim?0:8);
+    return{...gate,surface,altitude:surface+(['landing','touch-and-go'].includes(gate.kind)?3:Math.max(gate.clearance,minimumClearance))};
   });
   return{...route,gates,altitude:gates[0].altitude,resolved:true};
 }

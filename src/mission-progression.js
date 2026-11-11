@@ -1,14 +1,14 @@
-import {MISSIONS} from './missions.js';
+import {MISSIONS,RETIRED_RUNWAY_MISSIONS} from './missions.js';
 import {aircraftProfile,offsetMeters} from './flight.js';
-import {RUNWAY_MISSIONS} from './runway-missions.js';
+import {CAREER_IDS,CHAPTERS,careerRank} from './campaign.js';
 
 export const BRNO_MISSION_IDS=['brno-landing','brno-discovery','brno'];
 export const AIRCRAFT_LEVELS=Object.freeze({highWing:1,lowWing:2,airliner:3,fighter:4});
 export const LEVEL_XP=Object.freeze([0,100,250,450]);
 export const MEDAL_NAMES=Object.freeze({bronze:'Bronz',silver:'Stříbro',gold:'Zlato'});
 export const MEDAL_XP=Object.freeze({bronze:50,silver:75,gold:100});
-export const PILOT_RANKS=Object.freeze(['Kadet','Pilot','Zkušený pilot','Kapitán','Letecké eso','Legenda oblohy']);
-export const CAREER_XP=Object.freeze([0,100,250,450,900,1500]);
+export const PILOT_RANKS=Object.freeze(['Kadet','Pilot','Zkušený pilot','Velitel letu','Kapitán','Šéfpilot']);
+export const CAREER_XP=Object.freeze([0,5,11,17,23,28]); // completed flights, kept as a public progress scale
 const MEDAL_KEY='aeronaut.mission-medal.v2.';
 const COMPLETED_PREFIX='aeronaut.mission-completed.v1.';
 const LEGACY_LANDING=/^aeronaut\.score\.brno-landing-(easy|normal|hard)-v1\./;
@@ -40,16 +40,19 @@ export function missionProgress(storage){
     const medal=medalFor(mission.id,storage);
     if(medal){completed.add(mission.id);medals.set(mission.id,medal);xp+=MEDAL_XP[medal];}
   }
-  let unlockedCount=1;
-  while(unlockedCount<BRNO_MISSION_IDS.length&&completed.has(BRNO_MISSION_IDS[unlockedCount-1]))unlockedCount++;
-  const unlocked=new Set([...BRNO_MISSION_IDS.slice(0,unlockedCount),...RUNWAY_MISSIONS.map(mission=>mission.id)]);
-  if(completed.has('brno'))for(const mission of MISSIONS)unlocked.add(mission.id);
+  // Keep earned XP and aircraft unlocks from missions removed from the catalog.
+  for(const {id} of RETIRED_RUNWAY_MISSIONS)xp+=MEDAL_XP[medalFor(id,storage)]??0;
+  const nextId=CAREER_IDS.find(id=>!completed.has(id));
+  const unlocked=new Set([...completed,...(nextId?[nextId]:[])]);
+  const unlockedCount=BRNO_MISSION_IDS.filter(id=>unlocked.has(id)).length;
   const level=LEVEL_XP.reduce((current,threshold,index)=>xp>=threshold?index+1:current,1);
-  const careerLevel=CAREER_XP.reduce((current,threshold,index)=>xp>=threshold?index+1:current,1);
+  const careerCount=completed.size;
+  const careerLevel=CAREER_XP.reduce((current,threshold,index)=>careerCount>=threshold?index+1:current,1);
   const stars=[...medals.values()].reduce((sum,medal)=>sum+medalRank(medal),0);
-  return{completed,medals,unlocked,unlockedCount,total:BRNO_MISSION_IDS.length,xp,level,nextLevelXp:LEVEL_XP[level]??null,
-    stars,maxStars:MISSIONS.length*3,careerLevel,rank:PILOT_RANKS[careerLevel-1],nextRank:PILOT_RANKS[careerLevel]??null,
-    careerStartXp:CAREER_XP[careerLevel-1],nextCareerXp:CAREER_XP[careerLevel]??null};
+  return{completed,medals,unlocked,unlockedCount,total:CAREER_IDS.length,xp,level,nextLevelXp:LEVEL_XP[level]??null,
+    stars,maxStars:MISSIONS.length*3,careerLevel,careerCount,rank:careerRank(completed),nextRank:PILOT_RANKS[careerLevel]??null,
+    careerStartXp:CAREER_XP[careerLevel-1],nextCareerXp:CAREER_XP[careerLevel]??null,
+    nextMissionId:nextId,chapters:CHAPTERS.map(chapter=>({...chapter,completed:chapter.ids.filter(id=>completed.has(id)).length}))};
 }
 export function isMissionUnlocked(id,storage){return missionProgress(storage).unlocked.has(id);}
 export function isAircraftUnlocked(model,storage){return missionProgress(storage).level>=(AIRCRAFT_LEVELS[model]??Infinity);}
@@ -82,7 +85,7 @@ export function recordMissionResult(mission,model,result,storage){
   if(medalRank(medal)>medalRank(old))set(medalKey(mission.id),medal,storage);
   set(COMPLETED_PREFIX+mission.id,'1',storage);
   const after=missionProgress(storage);
-  return{rank:after.rank,careerLevel:after.careerLevel,rankUp:after.careerLevel>before.careerLevel,stars:medalRank(medal),bestStars:medalRank(medalFor(mission.id,storage)),saved:get(COMPLETED_PREFIX+mission.id,storage)==='1'&&medalRank(medalFor(mission.id,storage))>=medalRank(medal),medal,bestMedal:medalFor(mission.id,storage),xpGained:after.xp-before.xp,xp:after.xp,level:after.level,levelUp:after.level>before.level,
+  return{rank:after.rank,careerLevel:after.careerLevel,rankUp:after.careerLevel>before.careerLevel,chapterComplete:after.chapters.find(chapter=>chapter.ids.includes(mission.id))?.completed===after.chapters.find(chapter=>chapter.ids.includes(mission.id))?.ids.length&&!before.completed.has(mission.id),nextMissionId:after.nextMissionId,stars:medalRank(medal),bestStars:medalRank(medalFor(mission.id,storage)),saved:get(COMPLETED_PREFIX+mission.id,storage)==='1'&&medalRank(medalFor(mission.id,storage))>=medalRank(medal),medal,bestMedal:medalFor(mission.id,storage),xpGained:after.xp-before.xp,xp:after.xp,level:after.level,levelUp:after.level>before.level,
     newMissions:[...after.unlocked].filter(id=>!before.unlocked.has(id)),newAircraft:Object.keys(AIRCRAFT_LEVELS).filter(id=>AIRCRAFT_LEVELS[id]>before.level&&AIRCRAFT_LEVELS[id]<=after.level)};
 }
 // Kept for existing saves and callers that only know a mission was completed.

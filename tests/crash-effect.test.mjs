@@ -11,7 +11,8 @@ function setup(calm=false){
   class Color{constructor(red,green,blue,alpha){Object.assign(this,{red,green,blue,alpha});}}
   const previousWindow=globalThis.window,previousDocument=globalThis.document;
   globalThis.window={Cesium:{Cartesian3,BillboardCollection,Color,Transforms:{eastNorthUpToFixedFrame:position=>position},Matrix4:{multiplyByPoint:(frame,point)=>new Cartesian3(frame.x+point.x,frame.y+point.y,frame.z+point.z)}}};
-  globalThis.document={createElement:()=>({getContext:()=>({createRadialGradient:()=>({addColorStop(){}}),fillRect(){},beginPath(){},moveTo(){},lineTo(){},closePath(){},fill(){}})})};
+  globalThis.document={createElement:()=>({getContext:()=>({createRadialGradient:()=>({addColorStop(){}}),fillRect(){},beginPath(){},moveTo(){},lineTo(){},closePath(){},fill(){},
+    createImageData:(width,height)=>({data:new Uint8ClampedArray(width*height*4)}),putImageData(){}})})};
   let collection;
   const viewer={scene:{primitives:{add:value=>(collection=value),remove:()=>{removed=true;}},preUpdate:{addEventListener:fn=>{update=fn;return()=>{update=null;};}}}};
   const effect=createCrashEffect(viewer,{clock:()=>time,reducedMotion:()=>calm});
@@ -45,6 +46,31 @@ test('restart or exit cancels smoke and any delayed menu; successive crashes sta
   }finally{run.restore();}
 });
 
+test('impact starts with a flash and leaves a rising plume that follows the wind',()=>{
+  const run=setup();
+  try{
+    const impact={lat:49,lon:16,altitude:100};
+    run.effect.play(impact);
+    const [flash,halo]=run.particles;
+    assert.ok(flash.show&&halo.show);
+    run.advance(.33);
+    assert.equal(flash.show,false);assert.equal(halo.show,false);
+    run.advance(2.6);
+    const plume=run.particles.filter(p=>p.show);
+    assert.ok(plume.length>0&&plume.every(p=>p.position.z>108&&p.width===p.height));
+    const positions=plume.map(p=>p.position);
+    run.effect.play({...impact,wind:{east:4,north:-2}});
+    run.advance(5.2);
+    const drifting=run.particles.filter(p=>p.show);
+    assert.equal(drifting.length,positions.length);
+    for(let i=0;i<positions.length;i++){
+      assert.ok(drifting[i].position.x>positions[i].x);
+      assert.ok(drifting[i].position.y<positions[i].y);
+      assert.ok(Math.abs(drifting[i].position.z-positions[i].z)<1e-9);
+    }
+  }finally{run.restore();}
+});
+
 test('reduced motion uses a smaller dimmer burst without flying debris',()=>{
   const run=setup(true);
   try{
@@ -54,19 +80,19 @@ test('reduced motion uses a smaller dimmer burst without flying debris',()=>{
   }finally{run.restore();}
 });
 
-test('a game crash freezes the aircraft once and reveals its reason after the burst',()=>{
-  const elements=new Map(),menus=[];let ready,bursts=0,resets=0;
+test('a game crash freezes the aircraft, plays one explosion and reveals its reason after the burst',()=>{
+  const elements=new Map(),menus=[],effects=[];let ready,resets=0;
   const $=id=>{if(!elements.has(id))elements.set(id,{hidden:false,classList:{add(){}}});return elements.get(id);};
-  const context=vm.createContext({$,isRace:()=>false,updatePauseLocation(){},setFlightMenuVisible:value=>menus.push(value),
-    engineAudio:{pause(){}},aircraft:{show:true,chaseDistance:65,resetEffects:()=>resets++},
+  const context=vm.createContext({$,isRace:()=>false,stopInspectDrag(){},updatePauseLocation(){},setFlightMenuVisible:value=>menus.push(value),
+    engineAudio:{pause:()=>effects.push('pause'),explosion:()=>effects.push('sound')},aircraft:{show:true,chaseDistance:65,resetEffects:()=>resets++},
     missionRadio:{stop(){}},
-    crashEffect:{play:options=>{bursts++;ready=options.onReady;}}
+    crashEffect:{play:options=>{effects.push('burst');ready=options.onReady;}}
   });
   const app=fs.readFileSync(new URL('../src/app.js',import.meta.url),'utf8');
   vm.runInContext(`let running=true,paused=false,crashed=false,surfaceHeight=100;const keys=new Set(),touch=new Set(),state={lat:49,lon:16,altitude:103};`+
     app.slice(app.indexOf('function crash(reason){'),app.indexOf('function surfaceExclusions(){')),context);
   vm.runInContext("crash('Tvrdé dosednutí');crash('Podruhé');",context);
-  assert.equal(bursts,1);assert.equal(resets,1);
+  assert.deepEqual(effects,['pause','sound','burst']);assert.equal(resets,1);
   assert.equal(context.aircraft.show,false);assert.equal(vm.runInContext('paused&&crashed',context),true);
   assert.equal($('pauseText').textContent,'Tvrdé dosednutí');assert.deepEqual(menus,[false]);
   ready();assert.deepEqual(menus,[false,true]);

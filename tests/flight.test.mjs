@@ -66,3 +66,34 @@ test('switching aircraft preserves the flight and restart uses the selected prof
   assert.equal(restarted.model,'highWing');assert.equal(restarted.speed,aircraftProfile('highWing').cruiseSpeed);
   assert.equal(aircraftProfile('__proto__'),AIRCRAFT_PROFILES.lowWing);
 });
+
+test('a failed right engine reduces power, shakes the aircraft, and yaws right until corrected',()=>{
+  const healthy=initialFlight(start),failed={...healthy,engineFailure:'right'};
+  const corrected={...failed};
+  let peakBank=0;
+  for(let i=0;i<300;i++){
+    stepFlight(healthy,{},1/60);
+    stepFlight(failed,{},1/60);
+    stepFlight(corrected,{roll:-.25},1/60);
+    peakBank=Math.max(peakBank,Math.abs(failed.roll));
+  }
+  assert.ok(failed.enginePower<healthy.enginePower*.65&&failed.speed<healthy.speed);
+  assert.ok(failed.heading>.05&&failed.lon>healthy.lon);
+  assert.ok(peakBank>.01);
+  const angle=Math.atan2(Math.sin(corrected.heading),Math.cos(corrected.heading));
+  assert.ok(angle<failed.heading);
+  assert.equal(initialFlight(start).engineFailure,undefined);
+});
+
+test('mission gusts change the flight path and attitude independently of camera effects',()=>{
+  const calm=initialFlight({...start,model:'highWing'});
+  const windy=initialFlight({...start,model:'highWing',gustStrength:1,wind:{north:0,east:8}});
+  let peakBank=0;
+  for(let i=0;i<300;i++){
+    stepFlight(calm,{},1/60);stepFlight(windy,{},1/60);
+    peakBank=Math.max(peakBank,Math.abs(windy.roll));
+  }
+  assert.ok(peakBank>.10);
+  assert.ok(offsetMeters(windy.lat,windy.lon,calm).x>25);
+  assert.ok(Math.abs(windy.altitude-calm.altitude)>.1);
+});

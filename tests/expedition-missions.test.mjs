@@ -11,6 +11,7 @@ import {missionRecordKey} from '../src/mission-performance.js';
 import {missionRadioLine} from '../src/mission-radio.js';
 import {RAD,EARTH,aircraftProfile,resolveGroundContact} from '../src/flight.js';
 import {landingOffset} from '../src/mission-objectives.js';
+import {CAREER_IDS} from '../src/campaign.js';
 
 const flat=route=>resolveRouteSurface(route,routeSurfacePoints(route).map(()=>280));
 function storage(){const values=new Map();return {getItem:key=>values.get(key)??null,setItem:(key,value)=>values.set(key,String(value)),key:i=>[...values.keys()][i],get length(){return values.size;}};}
@@ -20,10 +21,10 @@ function stateAt(route,index,along,elapsed,model='highWing'){
     altitude:route.gates[index].altitude,elapsed,model,heading:(route.objective.heading??0)*RAD,speed:aircraftProfile(model).landingMin+1,verticalSpeed:-1,pitch:0,roll:0,onGround:false};
 }
 test('twelve world expeditions have local destination photographs, attribution and saved career rewards',()=>{
-  assert.equal(EXPEDITION_MISSIONS.length,12);assert.equal(MISSIONS.length,35);
+  assert.equal(EXPEDITION_MISSIONS.length,12);assert.equal(MISSIONS.length,28);
   const store=storage();
   assert.ok(EXPEDITION_MISSIONS.every(m=>!missionProgress(store).unlocked.has(m.id)));
-  for(const id of BRNO_MISSION_IDS)recordMissionCompletion(id,store);
+  for(const id of CAREER_IDS)recordMissionCompletion(id,store);
   for(const mission of EXPEDITION_MISSIONS){
     assert.ok(missionProgress(store).unlocked.has(mission.id));
     assert.ok(fs.existsSync(new URL('../src'+mission.location.image,import.meta.url)));

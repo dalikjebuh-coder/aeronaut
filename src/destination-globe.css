@@ -1,0 +1,110 @@
+.horizon-ui .destination-globe{
+  flex:none;width:100%;min-width:0;margin:0 auto;color:var(--text);
+  border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--panel);
+}
+.globe-stage{
+  position:relative;isolation:isolate;height:clamp(300px,calc(100dvh - 360px),660px);overflow:hidden;
+  background:
+    radial-gradient(circle at 26% 17%,#aac5d066 0 1px,transparent 1.5px) 0 0/167px 157px,
+    radial-gradient(circle at 12% 61%,#aac5d044 0 1px,transparent 1.5px) 0 0/241px 197px,
+    radial-gradient(circle at 68% 34%,#aac5d055 0 1px,transparent 1.5px) 0 0/303px 211px,
+    radial-gradient(ellipse at 54% 42%,#264657, var(--panel) 60%,var(--game-bg));
+}
+.globe-stage:before,.globe-stage:after{
+  content:'';position:absolute;top:50%;left:50%;width:var(--planet-diameter,0);aspect-ratio:1;
+  transform:translate(-50%,-50%);border-radius:50%;pointer-events:none;
+}
+.globe-stage:before{background:#a3d5e744;box-shadow:0 0 22px 5px #a3d5e74d,0 0 64px 10px #6094ab40}
+.globe-stage:after{
+  z-index:1;box-shadow:inset 0 0 10px 3px #e2f2f8ac,inset 0 -40px 46px -21px #102332ac;
+}
+.destination-globe:is([data-closeup="true"],[data-failed]) .globe-stage:before,
+.destination-globe:is([data-closeup="true"],[data-failed]) .globe-stage:after{display:none}
+.globe-view,.globe-markers{position:absolute;inset:0}
+.globe-view{cursor:grab;touch-action:none;outline:none}
+.globe-view[data-dragging]{cursor:grabbing}
+.destination-globe[data-mode="free"] .globe-view:not([data-dragging]){cursor:crosshair}
+.globe-view:focus-visible{outline:2px solid var(--accent);outline-offset:-3px}
+.destination-globe[data-mode="free"] .globe-view:focus-visible:after{
+  content:'+';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:25px;
+  color:var(--text);text-shadow:0 1px 4px var(--game-bg);pointer-events:none;
+}
+.globe-view .cesium-widget canvas{display:block}
+.globe-view .cesium-widget-credits{display:none}
+.globe-markers,.globe-pin,.globe-heading,.globe-selection,.globe-attribution{pointer-events:none;z-index:2}
+.globe-tools{z-index:2}
+.globe-marker{
+  position:absolute;transform:translate(-50%,-50%);display:grid;place-items:center;width:32px;height:32px;
+  border:1px solid #c2d5e299;border-radius:50%;background:var(--panel);color:var(--text);box-shadow:0 2px 10px #07111b77;
+  font:700 13px var(--font-game);pointer-events:auto;
+}
+.globe-marker[data-state="locked"]{background:#263e4d;color:#c2d0db;border-color:#a1b3c0}
+.globe-marker[aria-pressed="true"],.globe-marker:hover{z-index:1;color:var(--game-bg);background:var(--accent);border-color:var(--accent);box-shadow:0 0 0 4px #f1cf8245}
+.globe-marker:focus-visible,.destination-globe button:focus-visible{outline-color:var(--accent);z-index:2}
+.globe-pin{position:absolute;transform:translate(-50%,-94%);color:var(--accent);filter:drop-shadow(0 2px 4px var(--game-bg))}
+.globe-pin svg{display:block;width:31px;height:39px;fill:currentColor;stroke:var(--game-bg);stroke-width:1.6}
+.globe-pin circle{fill:var(--panel);stroke:none}
+.globe-pin[data-draft="true"]{color:#ffdf9c}
+.globe-heading{position:absolute;top:20px;left:22px;text-shadow:0 2px 12px var(--game-bg)}
+.globe-heading .eyebrow{font-size:10px}
+.globe-heading h2{margin-top:5px;font:600 clamp(22px,2.4vw,36px)/1.1 var(--font-game);letter-spacing:-.03em}
+.globe-tools{position:absolute;right:15px;top:16px;display:grid;gap:5px}
+.globe-tools button,.globe-group-close{
+  width:40px;height:40px;display:grid;place-items:center;font-size:22px;
+  border:1px solid var(--line);border-radius:7px;background:var(--panel);color:var(--text);
+}
+.globe-tools button:hover:not(:disabled),.globe-group-close:hover{background:#263e4d;border-color:var(--accent)}
+.globe-tools button:disabled{opacity:.46;cursor:default}
+.globe-selection{
+  position:absolute;left:16px;bottom:16px;display:grid;gap:4px;width:max-content;max-width:calc(100% - 72px);
+  padding:10px 13px;border:1px solid var(--line);border-radius:7px;background:#102332f2;
+}
+.globe-selection span{color:var(--accent);font-size:10px;font-weight:700;letter-spacing:.075em;text-transform:uppercase}
+.globe-selection strong{font:600 clamp(16px,1.55vw,22px)/1.2 var(--font-game)}
+.globe-selection small{color:var(--muted);font-size:12px}
+.globe-attribution{position:absolute;bottom:8px;right:12px;color:#c2d0db;font-size:10px;text-shadow:0 1px 5px var(--game-bg)}
+.globe-group{
+  position:absolute;right:16px;bottom:24px;z-index:3;width:min(315px,calc(100% - 32px));padding:10px;
+  border:1px solid #a7bec55c;border-radius:8px;background:var(--panel);box-shadow:0 10px 25px #07111ba8;
+}
+.globe-group>div:first-child{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 0 8px 7px}
+.globe-group h3{margin:0;font:600 17px var(--font-game)}
+.globe-group-close{width:36px;height:36px}
+.globe-group-list{display:grid;gap:5px;max-height:min(235px,37dvh);overflow:auto;overscroll-behavior:contain;padding:4px}
+.globe-group-list button{display:grid;gap:4px;padding:9px 10px;border:1px solid transparent;border-radius:5px;background:#1c3547;color:var(--text);text-align:left;font-size:14px}
+.globe-group-list button small{color:#c2d0db;font-size:11px}
+.globe-group-list button[aria-pressed="true"],.globe-group-list button:hover{border-color:var(--accent)}
+.globe-bar{display:flex;justify-content:space-between;align-items:center;gap:10px;min-height:54px;padding:8px 13px;border-top:1px solid var(--line)}
+.globe-bar p{flex:1;min-width:125px;color:#c2d0db;font-size:13px;line-height:1.4}
+.globe-bar button{
+  display:flex;align-items:center;justify-content:center;gap:7px;min-height:40px;padding:7px 11px;
+  border:1px solid var(--line);border-radius:6px;background:#1c3547;color:var(--text);
+  font-size:13px;font-weight:600;white-space:nowrap;
+}
+.globe-bar button:hover:not(:disabled){border-color:var(--accent)}
+.globe-bar svg{width:17px;height:17px}
+#globeMissionList{display:none}
+.destination-globe[data-failed] .globe-stage{height:150px}
+.destination-globe[data-failed] :is(.globe-view,.globe-markers,.globe-tools,.globe-pin,.globe-attribution){display:none}
+.horizon-ui #missionGlobeHost{flex:none;width:100%}
+.horizon-ui .mission-details:before{display:none}
+.horizon-ui #freeGlobeHost:has(.destination-globe){margin:0 0 18px}
+.horizon-ui #freeGlobeHost .globe-stage{height:clamp(345px,53dvh,590px)}
+.horizon-ui #freeGlobeHost .destination-globe[data-failed] .globe-stage{height:150px}
+.horizon-ui #missionGlobeHost .destination-globe{max-width:1000px}
+@media(max-width:820px){
+  .horizon-ui .mission-library{order:1}
+  #globeMissionList:not([hidden]){display:flex}
+  .globe-stage,.horizon-ui #freeGlobeHost .globe-stage{height:clamp(320px,62vw,485px)}
+  .globe-heading{left:14px;top:13px}
+  .globe-tools{right:10px;top:10px}
+  .globe-tools button{width:42px;height:42px}
+  .globe-selection{left:10px;bottom:12px;padding:8px 10px}
+}
+@media(max-width:540px){
+  .globe-bar{flex-wrap:wrap;justify-content:flex-start}
+  .globe-bar p{flex-basis:100%}
+  .globe-bar button{min-height:44px}
+  .globe-marker{width:36px;height:36px}
+  .globe-group{right:10px;bottom:18px;width:calc(100% - 20px)}
+}

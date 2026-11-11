@@ -1,4 +1,4 @@
-export const FLIGHT_CAMERA_MODES=['chase','distant','overhead','front','cinematic'];
+export const FLIGHT_CAMERA_MODES=['chase','distant','overhead','front','cinematic','roof'];
 
 export function crashCameraPose(state,chaseDistance=48){
   const distance=Math.max(65,Math.min(180,chaseDistance*1.5)),height=distance*.5;

@@ -25,28 +25,39 @@
 .horizon-ui #missionCards .mission-card-lock{width:18px;height:18px;background:none;border:0;color:#8fa4b0}
 .horizon-ui #missionCards .mission-card-lock svg{width:15px;height:15px}
 .horizon-ui #missionCards .mission-card>i,.horizon-ui #missionCards .mission-card[aria-pressed="true"]>i{display:none}
-.horizon-ui .mission-details{padding:24px 32px 130px;gap:0}
-.horizon-ui .mission-details .race-preview{display:flex;flex-direction:column;flex:none;overflow:visible;border:0;border-radius:0;background:none;max-width:820px;width:100%;margin:0 auto}
-.horizon-ui .mission-details .mission-photo{position:relative;width:100%;max-width:none;margin:0}
-.horizon-ui .mission-photo img{width:100%;height:clamp(150px,25dvh,260px);border-radius:8px;object-fit:cover;border:1px solid var(--line)}
+.horizon-ui .mission-details{padding:24px 32px;gap:0}
+.horizon-ui .mission-detail-dialog{--briefing-padding:clamp(16px,4vw,28px);width:min(850px,calc(100vw - 28px));padding:0;overflow:hidden}
+.horizon-ui .mission-detail-dialog[open]{display:grid;grid-template-rows:auto minmax(0,1fr) auto}
+.horizon-ui .mission-detail-dialog::backdrop{background:#07111b99;backdrop-filter:none}
+.mission-detail-dialog>.dialog-top,.mission-briefing-actions{padding:8px var(--briefing-padding);background:#102332}
+.horizon-ui .mission-detail-dialog .close{width:44px;height:44px}
+.mission-briefing-body{min-height:0;padding:0 var(--briefing-padding) 18px;overflow:auto;overscroll-behavior:contain}
+.mission-briefing-actions{display:flex;justify-content:flex-end;padding-block:12px;border-top:1px solid var(--line)}
+.mission-briefing-actions .primary{min-height:44px;font-size:16px}
+.horizon-ui .mission-detail-dialog .race-preview{display:flex;flex-direction:column;min-height:0;gap:16px;border:0;background:none}
+.horizon-ui .mission-detail-dialog .mission-photo{position:relative;width:100%;max-width:none;margin:0}
+.horizon-ui .mission-detail-dialog .mission-photo img{display:block;width:100%;border-radius:8px;object-fit:cover;border:1px solid var(--line)}
 .horizon-ui .mission-photo-credit{position:absolute;right:10px;bottom:10px;color:#e3edf3;font-size:11px;line-height:1.5}
 .horizon-ui .mission-photo-credit summary{padding:5px 9px;border:1px solid var(--line);border-radius:4px;background:#0b1b29;cursor:pointer;list-style:none}
 .horizon-ui .mission-photo-credit[open]{left:10px;background:#0b1b29;border:1px solid var(--line);border-radius:4px;padding:5px 9px}
 .horizon-ui .mission-photo-credit[open] summary{padding:0;border:0}
 .horizon-ui .mission-photo-credit a{color:var(--accent)}
-.horizon-ui .mission-details .race-preview-info{padding:18px 0 0}
+.horizon-ui .mission-detail-dialog .race-preview-info{padding:0}
 .horizon-ui .horizon-mission-topline{gap:12px;margin:0 0 9px;align-items:center}
 .horizon-ui #horizonMissionPlace{font-size:13px;color:#9bb2c2}
 .horizon-ui #missionObjectiveLabel{font-size:11px;padding:0;letter-spacing:1px;background:none;border:0;color:var(--accent)}
-.horizon-ui .mission-details #racePreviewTitle{font-size:clamp(30px,3.4vw,46px);letter-spacing:-1.2px;line-height:1.1;max-width:none;margin:0}
+.horizon-ui .mission-detail-dialog #racePreviewTitle{font-size:clamp(28px,4vw,42px);letter-spacing:-1.2px;line-height:1.1;margin:0}
+.mission-difficulty-rating{display:flex;align-items:center;gap:9px;margin-top:10px;font-size:13px;color:#bfd0db}
+.mission-difficulty-rating span{color:var(--accent);font-size:18px;letter-spacing:.08em}
+.horizon-ui .mission-detail-dialog #horizonMissionDescription{font-size:16px;margin:10px 0 0}
 .horizon-ui .mission-task{margin:11px 0 0;padding:0;background:none;border:0;max-width:none}
 .horizon-ui .mission-task h3{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
 .horizon-ui .mission-task p{font-size:17px;line-height:1.4;margin:0;color:#e3edf3}
 .horizon-ui .horizon-mission-meta{margin:12px 0 0;gap:14px;font-size:12px;color:#9bb2c2}
 .horizon-ui .horizon-mission-meta>span+span{padding-left:14px;border-left:1px solid var(--line)}
-.horizon-ui .mission-details>.mission-next-guidance{width:100%;max-width:820px;margin:16px auto 0;padding:10px 12px;border:1px solid var(--line);border-radius:4px;font-size:13px;line-height:1.4;color:#bfd0db}
-.horizon-ui .mission-details[data-state="locked"]>.mission-next-guidance{color:var(--accent);background:#f1cf820d;border-color:#e6c98255}
-.horizon-ui .mission-details>.mission-medals{flex:none;width:100%;max-width:820px;margin:18px auto 0;padding-top:14px;border-top:1px solid var(--line)}
+.horizon-ui .mission-detail-dialog .mission-next-guidance{margin:16px 0 0;padding:10px 12px;border:1px solid var(--line);border-radius:4px;font-size:13px;line-height:1.4;color:#bfd0db}
+.horizon-ui .mission-detail-dialog[data-state="locked"] .mission-next-guidance{color:var(--accent);background:#f1cf820d;border-color:#e6c98255}
+.horizon-ui .mission-detail-dialog .mission-medals{margin:18px 0 0;padding-top:14px;border-top:1px solid var(--line)}
 .horizon-ui .mission-medals-heading{margin-bottom:10px}
 .horizon-ui .mission-medals h3{font-size:11px;letter-spacing:1px;color:#9bb2c2}
 .horizon-ui #missionRewardXp{font-size:12px;color:var(--accent)}
@@ -58,7 +69,7 @@
 .horizon-ui .mission-medal[data-earned="true"]{border:0;background:none}
 .horizon-ui .mission-medal[data-earned="true"] .medal-symbol{background:#f1cf821b}
 .horizon-ui .mission-medal[data-earned="true"] .medal-symbol:after{content:none}
-.horizon-ui .mission-details>.horizon-mission-more{flex:none;width:100%;max-width:820px;margin:12px auto 0}
+.horizon-ui .mission-detail-dialog .horizon-mission-more{max-width:none;margin:12px 0 0}
 .horizon-ui .horizon-mission-more>summary{font-size:13px;min-height:38px;padding:10px 0;color:#9bb2c2}
 .horizon-ui .horizon-mission-more[open]>div{max-height:none;margin-top:4px;padding:16px;font-size:13px}
 .horizon-ui .horizon-mission-more p,.horizon-ui .horizon-mission-more #raceRouteStops li{font-size:14px;line-height:1.5}
@@ -84,9 +95,6 @@
   .horizon-ui #missionCards .mission-card{height:68px;min-height:68px;background:#0b1b29;border:1px solid var(--line)}
   .horizon-ui #missionCards .mission-card strong{font-size:14px}
   .horizon-ui .mission-details{min-height:0;height:auto;padding:0;overflow:visible}
-  .horizon-ui .mission-photo img{height:175px}
-  .horizon-ui .mission-details #racePreviewTitle{font-size:32px}
-  .horizon-ui .mission-details .race-preview-info{padding-top:14px}
   .horizon-ui .mission-task p{font-size:16px}
   .horizon-ui .game-menu[data-step="3"][data-game-mode="missions"] .menu-footer{min-height:80px;padding:12px 18px;display:flex}
   .horizon-ui .game-menu[data-step="3"][data-game-mode="missions"] .menu-footer #startButton{max-width:100%;width:auto;flex:1;min-width:0;font-size:17px}
@@ -95,16 +103,13 @@
   .horizon-ui:not(.flying):has(.game-menu[data-step="3"][data-game-mode="missions"]) .cesium-viewer-bottom{bottom:80px!important;left:0!important;width:100%;padding:3px 18px}
 }
 @media(max-width:420px){
-  .horizon-ui .mission-photo img{height:145px}
-  .horizon-ui .mission-details #racePreviewTitle{font-size:29px}
   .horizon-ui .mission-medal{grid-template-columns:28px 1fr;column-gap:6px}
   .horizon-ui .mission-medal .medal-symbol{width:26px;height:26px;font-size:16px}
   .horizon-ui .mission-medal strong,.horizon-ui .mission-medal small{font-size:11px}
 }
 
 /* The photo and the route are equally sized, visible panels. */
-.horizon-ui .mission-details .race-preview,.horizon-ui .mission-details>.mission-next-guidance,.horizon-ui .mission-details>.mission-medals,.horizon-ui .mission-details>.horizon-mission-more{max-width:1000px}
-.horizon-ui .mission-visuals{--mission-panel-height:clamp(240px,32dvh,320px);display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.horizon-ui .mission-visuals{--mission-panel-height:clamp(170px,26dvh,245px);display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 .horizon-ui .mission-visuals .mission-photo img{height:var(--mission-panel-height)}
 .horizon-ui .mission-map-panel{height:var(--mission-panel-height);min-width:0;margin:0;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:#102637}
 .horizon-ui #raceRouteMap{height:100%;width:100%}
@@ -135,8 +140,7 @@
 .horizon-ui #raceRouteMap .map-kicker{font-size:13px;fill:#9bb2c2;letter-spacing:1px}
 .horizon-ui #raceRouteMap .map-north path,.horizon-ui #raceRouteMap .map-scale path{stroke:#9bb2c2;stroke-width:1.5}
 .horizon-ui #raceRouteMap .map-north text,.horizon-ui #raceRouteMap .map-scale text,.horizon-ui #raceRouteMap .map-note{font-size:11px;fill:#9bb2c2}
-@media(max-width:1100px){.horizon-ui .mission-visuals{grid-template-columns:1fr;--mission-panel-height:240px}}
-@media(max-width:420px){.horizon-ui .mission-visuals{--mission-panel-height:220px}}
+@media(max-width:560px){.horizon-ui .mission-visuals{grid-template-columns:1fr}}
 
 /* Lessons follow flight skills, within the existing city catalogue. */
 .horizon-ui #missionCards .mission-chapter-label{margin:16px 6px 7px;color:#c2d0db;font-size:12px;font-weight:600;line-height:1.4}

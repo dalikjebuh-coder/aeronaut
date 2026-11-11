@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {getMission,missionStart} from '../src/missions.js';
+import {getMission,getPlayableMission,missionStart} from '../src/missions.js';
 import {TASK_MISSIONS,objectiveType,usesScore,missionBrief,discoveryMessage} from '../src/task-missions.js';
 import {routeSurfacePoints,resolveRouteSurface} from '../src/mission-difficulty.js';
 import {BrnoRace,gateFrame} from '../src/brno-race.js';
@@ -9,6 +9,21 @@ import {RAD,EARTH,resolveGroundContact,aircraftProfile} from '../src/flight.js';
 
 const levels=['easy','normal','hard'];
 const prepared=(id,level)=>{const mission=getMission(id,level),route=resolveRouteSurface(mission.route,routeSurfacePoints(mission.route).map(()=>277));return{mission,route};};
+
+test('passing all gates is insufficient when the scored portion falls below the mission minimum',()=>{
+  const {route:source}=getPlayableMission('canyon-patrol','highWing');
+  const route=resolveRouteSurface(source,routeSurfacePoints(source).map(()=>277));
+  for(const [surface,status] of [[277,'finished'],[0,'failed']]){
+    const race=new BrnoRace(route);let elapsed=0,events;
+    for(let index=0;index<route.gates.length;index++){
+      race.update(point(route,index,-30,elapsed+=.05),surface);
+      events=race.update(point(route,index,30,elapsed+=.05),surface);
+    }
+    assert.equal(race.status,status);
+    assert.equal(events.at(-1).status,status);
+    if(status==='failed')assert.match(race.taskHint,/55 %/);
+  }
+});
 function point(route,index,along,elapsed){
   const {center,normal}=gateFrame(index,route),anchor=route.gates[0];
   return{lat:anchor.lat+(center.y+normal.y*along)/EARTH/RAD,lon:anchor.lon+(center.x+normal.x*along)/(EARTH*Math.cos(anchor.lat*RAD))/RAD,altitude:route.gates[index].altitude,elapsed,model:'highWing',speed:35,heading:98*RAD,verticalSpeed:-1,roll:0,pitch:0,onGround:false};

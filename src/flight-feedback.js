@@ -51,11 +51,12 @@ export function flightFeedback(state,{active=true,motion=true,turbulence=0,groun
   const descending=airborne&&state.pitch< -Math.max(12,profile.pitchDown*.7)*RAD&&state.verticalSpeed< -3;
   const maneuverWarning=accelerating?'acceleration':takingOff?'takeoff':climbing?'climb':descending?'descent':'';
   const intensity=airborne&&motion?maneuver:0;
-  const gust=airborne&&motion?clamp(turbulence,0,1):0;
+  const gust=airborne&&motion?clamp(Math.max(turbulence,state.gustIntensity||0),0,1):0;
+  const engine=airborne&&motion&&state.engineFailure?1:0;
   const t=state.elapsed;
   return{warning,maneuver,maneuverWarning,
-    heading:intensity*.001*(Math.sin(t*23)+.35*Math.sin(t*41))+gust*.0015*Math.sin(t*8.3),
-    pitch:intensity*.0012*(Math.sin(t*29)+.3*Math.sin(t*47))+gust*.002*Math.sin(t*11.7),
-    roll:intensity*.0015*Math.sin(t*19)+gust*.003*Math.sin(t*7.1)
+    heading:intensity*.001*(Math.sin(t*23)+.35*Math.sin(t*41))+gust*.0015*Math.sin(t*8.3)+engine*.0025*Math.sin(t*27),
+    pitch:intensity*.0012*(Math.sin(t*29)+.3*Math.sin(t*47))+gust*.002*Math.sin(t*11.7)+engine*.003*Math.sin(t*34),
+    roll:intensity*.0015*Math.sin(t*19)+gust*.003*Math.sin(t*7.1)+engine*.004*Math.sin(t*24)
   };
 }

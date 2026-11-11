@@ -1,18 +1,18 @@
-import {missionRecordKey,readMissionRecord,missionFeedback,starLabel,starsForMedal} from './mission-performance.js';
+import {missionRecordKey,readMissionRecord,starsForMedal} from './mission-performance.js';
 import {RAD,EARTH,initialFlight,stepFlight,resolveGroundContact,landingFailureReason,offsetMeters,aircraftProfile,selectFlightAircraft} from './flight.js';
 import {createDemo,createAircraft,DEMO_ORIGIN,demoHeight} from './world.js';
 import {createCityLabels} from './city-labels.js';
 import {createEngineAudio} from './engine-audio.js';
-import {createMissionRadio} from './mission-radio.js';
 import {createRunwayFeedback,runwayTransition} from './runway-feedback.js';
 import {captureScenePhoto,photoFilename} from './photo-export.js';
 import {BrnoRace,formatRaceTime} from './brno-race.js';
 import {createRaceView} from './race-view.js';
 import {missionRadarState,cardinalDirection,drawMissionRadar,radarDistance} from './mission-radar.js';
-import {initGameMenu,syncGameMenu,hasSelectedAircraft} from './game-menu.js';
-import {selectedPlace} from './locations.js';
-import {getMission,missionStart} from './missions.js';
-import {isMissionUnlocked,isAircraftUnlocked,recordMissionResult,MEDAL_NAMES,BRNO_MISSION_IDS,missionProgress} from './mission-progression.js';
+import {initGameMenu,syncGameMenu,DISPLAY_MISSIONS} from './game-menu.js';
+import {LOCATIONS,selectedPlace} from './locations.js';
+import {MISSIONS,getMission,getPlayableMission,missionStart} from './missions.js';
+import {createDestinationGlobe} from './destination-globe.js';
+import {isMissionUnlocked,isAircraftUnlocked,recordMissionResult,MEDAL_NAMES,missionProgress} from './mission-progression.js';
 import {routeSurfacePoints,resolveRouteSurface,underpassSurface} from './mission-difficulty.js';
 import {createLocationSearch} from './location-search.js';
 import {objectiveType,usesScore,missionBrief,landingApproachMessage,discoveryMessage} from './task-missions.js';
@@ -21,12 +21,13 @@ import {FLIGHT_CAMERA_MODES,flightCameraPose,crashCameraPose} from './flight-cam
 import {landingSurfaceFlat} from './landing-surface.js';
 import {createCrashEffect} from './crash-effect.js';
 import {createGeographyGuide} from './geography-guide.js';
-import {createWeatherEffects} from './weather-effects.js';
+import {achievementCollection,createAchievementGallery,recordCloudTurbulence,recordEngineOutCompletion} from './achievements.js';
+import {createWeatherEffects,cloudVolumeShader} from './weather-effects.js';
 import {installFlightUiLayout} from './flight-ui-layout.js';
 const $=id=>document.getElementById(id);
 const C=window.Cesium;
 const engineAudio=createEngineAudio();
-const missionRadio=createMissionRadio({caption:document.getElementById('radioMessage'),enabled:()=>engineAudio.enabled,transmission:(active,speaker,immediate)=>engineAudio.radioTransmission(active,speaker,immediate)});
+const missionRadio=engineAudio.radio;
 const turbulence=createTurbulence();
 const runwayFeedback=createRunwayFeedback();
 let turbulenceFeedback={intensity:0,active:false};
@@ -35,17 +36,18 @@ const MODEL_STORAGE_KEY='aeronaut.aircraftModel';
 const DAYLIGHT_STORAGE_KEY='aeronaut.timeOfDay';
 const WEATHER_STORAGE_KEY='aeronaut.weather';
 const FLIGHT_CAMERA_STORAGE_KEY='aeronaut.flightCamera';
-let daylightTint,locationSearch,geographyGuide,crashEffect,weatherEffects;
+let daylightTint,locationSearch,geographyGuide,badgeGallery,crashEffect,weatherEffects,destinationGlobe;
 let searchCredits=[],searchPreviewCredits=[];
 const race=new BrnoRace();
 let raceView,raceBest=null,raceBestKey='';
+let cloudTurbulenceSeen=false;
 let missionId='first-takeoff',freeConditions={time:'day',weather:'clear'};
-const currentMission=()=>getMission(missionId,'easy',$('aircraftModel').value);
+const currentMission=()=>getPlayableMission(missionId,$('aircraftModel').value);
 const isRace=()=>$('gameMode').value==='missions';
 const DAYLIGHT_PRESETS={
   morning:{hour:6.5,color:[1,.9,.78],intensity:1.7,sky:-.07,tint:[.98,.92,.85]},
   day:{hour:12,color:[1,1,1],intensity:2,sky:0,tint:[1,1,1]},
-  evening:{hour:17.5,color:[1,.72,.52],intensity:1.6,sky:-.12,tint:[.98,.84,.74]},
+  evening:{hour:17.72,color:[1,.68,.43],intensity:1.45,sky:-.15,tint:[.98,.84,.74]},
   night:{hour:0,color:[.58,.7,1],intensity:.7,sky:-.65,tint:[.3,.37,.55]}
 };
 const WEATHER_PRESETS={
@@ -58,7 +60,8 @@ function readSavedToken(){try{return localStorage.getItem(TOKEN_STORAGE_KEY)||''
 function saveToken(value){try{if(value)localStorage.setItem(TOKEN_STORAGE_KEY,value);else localStorage.removeItem(TOKEN_STORAGE_KEY);return true;}catch{return false;}}
 function readSavedModel(){try{const saved=localStorage.getItem(MODEL_STORAGE_KEY);return isAircraftUnlocked(saved)?saved:'highWing';}catch{return'highWing';}}
 function saveModel(value){try{localStorage.setItem(MODEL_STORAGE_KEY,value);}catch{}}
-let menuStep=1,locationKey='brno',customLocation=null,mapPickerOpen=false,mapDraft=null,startMarker;
+let menuStep=1,locationKey='brno',customLocation=null,mapDraft=null;
+const randomStartPlaces=[...new Map([...MISSIONS.map(mission=>mission.location),...LOCATIONS].map(place=>[place.name,place])).values()];
 const RADAR_RANGE=20000;
 let viewer,demo,aircraft,cityLabels,tileset,mode='google',ionToken=window.AERONAUT_CONFIG?.cesiumIonToken||readSavedToken(),state=initialFlight({...DEMO_ORIGIN}),origin={...DEMO_ORIGIN},running=false,paused=false,crashed=false,busy=false,epoch=0;
 let keys=new Set(),touch=new Set(),lastFrame=0,lastHud=0,lastLabels=0,lastSurface=0,surfaceHeight=0,surfaceFlat=false,trail=[],lastTrail=0,noticeTimer,noticeLock=0;
@@ -67,6 +70,7 @@ try{const saved=localStorage.getItem('aeronaut.cameraMotion');if(saved!==null)ca
 let flightCameraMode='chase';
 try{const saved=localStorage.getItem(FLIGHT_CAMERA_STORAGE_KEY);if(FLIGHT_CAMERA_MODES.includes(saved))flightCameraMode=saved;}catch{}
 let inspectHeading=0,inspectElevation=.3,inspectDistance=110;
+let flightOrbit=null;
 const photo={active:false,clean:false,roll:0,savedFov:0,savedLabels:false,saving:false,drag:null,session:0,url:null};
 let startup={...DEMO_ORIGIN,altitude:600,heading:0};
 const loading=(text)=>{$('loading').hidden=!text;if(text){$('loading').querySelector('strong').textContent=text;$('loading').querySelector('p').textContent=mode==='google'?'Načítání online 3D map může chvíli trvat.':'Vytváření tréninkové krajiny';}};
@@ -92,10 +96,12 @@ function applyTimeOfDay(place=running?state:selection()){
   const weather=Object.hasOwn(WEATHER_PRESETS,weatherChoice)?WEATHER_PRESETS[weatherChoice]:WEATHER_PRESETS.clear;
   const lightOptions={color:new C.Color(...preset.color),intensity:preset.intensity*weather.light};
   if(choice==='night'){
-    // A soft moon-like light keeps the aircraft readable while the Sun is below the horizon.
+    // Keep the visible Moon and the night lighting in the same direction.
     const enu=C.Transforms.eastNorthUpToFixedFrame(C.Cartesian3.fromDegrees(place.lon,place.lat));
-    const direction=C.Matrix4.multiplyByPointAsVector(enu,new C.Cartesian3(.4,-.3,-.85),new C.Cartesian3());
-    viewer.scene.light=new C.DirectionalLight({...lightOptions,direction:C.Cartesian3.normalize(direction,direction)});
+    const moonDirection=C.Matrix4.multiplyByPointAsVector(enu,new C.Cartesian3(-.83,.48,.20),new C.Cartesian3());
+    C.Cartesian3.normalize(moonDirection,moonDirection);
+    daylightTint.uniforms.moonDirection=moonDirection;
+    viewer.scene.light=new C.DirectionalLight({...lightOptions,direction:C.Cartesian3.negate(moonDirection,new C.Cartesian3())});
   }else viewer.scene.light=new C.SunLight(lightOptions);
   viewer.scene.globe.enableLighting=true;
   viewer.scene.globe.dynamicAtmosphereLightingFromSun=true;
@@ -104,18 +110,28 @@ function applyTimeOfDay(place=running?state:selection()){
   viewer.scene.skyAtmosphere.saturationShift=weather.skySaturation;
   viewer.scene.fog.density=weather.density;
   viewer.scene.fog.visualDensityScalar=weather.visualDensity;
-  if(viewer.scene.sun)viewer.scene.sun.show=choice!=='night'&&weatherChoice!=='overcast';
+  // The evening sky pass draws its own disk and glow behind the terrain.
+  if(viewer.scene.sun)viewer.scene.sun.show=choice!=='night'&&choice!=='evening'&&weatherChoice!=='overcast';
   weatherEffects?.setConditions(weatherChoice,choice);
   // Photogrammetry contains baked daylight; tint it along with the scene.
   daylightTint.uniforms.tint=new C.Cartesian3(...preset.tint.map((value,index)=>value*weather.tint[index]));
   daylightTint.uniforms.saturation=weather.saturation;
   daylightTint.uniforms.sunset=choice==='evening'&&weatherChoice!=='overcast'?1:0;
-  daylightTint.enabled=choice!=='day'||weatherChoice!=='clear';
+  daylightTint.uniforms.eveningHaze=choice==='evening'?1:0;
+  daylightTint.uniforms.nightHaze=choice==='night'?1:0;
+  const nightSky=choice==='night'&&weatherChoice!=='overcast'?1:0;
+  daylightTint.uniforms.stars=nightSky;
+  daylightTint.uniforms.moon=nightSky;
+  const daylightHaze={clear:0.36,partly:0.44};
+  daylightTint.uniforms.daylightHaze=choice==='day'||choice==='morning'?(daylightHaze[weatherChoice]??0):0;
+  daylightTint.uniforms.sunsetClouds=weatherChoice==='partly'?1:weatherChoice==='haze'?.65:.18;
+  daylightTint.enabled=true;
   viewer.scene.requestRender();
 }
 function selection(){return mode==='demo'?{...DEMO_ORIGIN,name:'Tréninková krajina'}:isRace()?{...missionStart(currentMission())}:selectedPlace(locationKey,customLocation);}
 function resetRace(){
   turbulence.reset();turbulenceFeedback={intensity:0,active:false};
+  cloudTurbulenceSeen=false;
   runwayFeedback.reset();
   race.reset();race.update(state);
   raceBestKey=missionRecordKey(currentMission(),state.model,$('timeOfDay').value,$('weather').value,mode);
@@ -137,47 +153,70 @@ function updateRace(){
     engineAudio.gatePassed(event.status==='finished');
     if(event.status==='finished'){
       const scored=usesScore(race.route),result=scored?race.score:race.elapsed(state.elapsed),record=raceBest===null||(scored?result>raceBest:result<raceBest);
-      const feedback=missionFeedback(currentMission(),state.model,result,{previousBest:raceBest,landing:race.landingPenalties});
+      const badgesBefore=new Set(achievementCollection().items.filter(badge=>badge.earned).map(badge=>badge.id));
       const reward=recordMissionResult(currentMission(),state.model,result);
+      if(reward?.saved&&state.engineFailure)recordEngineOutCompletion();
+      const newAchievements=reward?.saved?achievementCollection().items.filter(badge=>badge.earned&&!badgesBefore.has(badge.id)):[];
+      if(reward?.saved)badgeGallery?.refresh();
       if(record){raceBest=result;try{localStorage.setItem(raceBestKey,String(result));}catch{}}
       syncControls();
-      const completion=discovery?discoveryMessage(race.route,event.index,collected):`Mise dokončena! ${scored?result+' / 100 bodů':formatRaceTime(result)}${record?' · nový osobní rekord!':''}`;
+      const completion=discovery?discoveryMessage(race.route,event.index,collected):'Mise dokončena!';
       notice(completion,10000);
-      const summary={reward,result,scored,record,feedback};
+      const summary={reward,newAchievements};
       if(objectiveType(race.route)==='landing'){
-        // Let the wheel chirp and camera pulse finish before the result pauses flight.
+        // Let the camera pulse finish before the result pauses flight.
         const completedState=state;
         setTimeout(()=>{if(running&&!crashed&&state===completedState)showMissionResult({...summary,keepRadio:true});},900);
       }else showMissionResult(summary);
     }else if(['touch-and-go','rollout','failed'].includes(event.status)){notice(race.taskHint,Infinity);if(event.status==='rollout')$('notice').dataset.landing='true';}
     else if(event.status==='discovered')notice(discoveryMessage(race.route,event.index,collected),6500);
     else if(event.status==='landing'){notice((race.status==='rollout'?race.taskHint:landingApproachMessage(race.route,state.model,race.next)),Infinity);$('notice').dataset.landing='true';}
+    else if(event.index===race.route.engineFailureAfterGate){
+      state.engineFailure=state.model==='highWing'?'single':'right';
+      notice(state.engineFailure==='right'?'Posádka hlásí výpadek pravého motoru. Koriguj směr doleva a hlídej rychlost.':'Motor ztratil část výkonu. Udrž rychlost a vyhni se prudkému stoupání.',7000);
+    }
     else notice(event.index===0?(objectiveType(race.route)==='time'?'Start! Čas běží.':'Úkol zahájen. Sleduj další žlutý bod.'):`Brána ${event.index+1} splněna · další: ${race.route.gates[race.next].name}`,3000);
   }
 }
-function showMissionResult({reward,result,scored,record,feedback,keepRadio=false}){
+function showMissionResult({reward,keepRadio=false,newAchievements=[]}){
   pauseFlight(true,keepRadio);
   const medal=reward?.medal||'bronze';
   $('resultTitle').textContent=currentMission().title;
-  $('resultPerformance').textContent=scored?'Hodnocení letu':`Čas letu · ${formatRaceTime(result)}`;
-  $('resultMedal').textContent=`${starLabel(starsForMedal(medal))} · ${MEDAL_NAMES[medal]}`;$('resultMedal').dataset.medal=medal;
-  $('resultXp').textContent=`${reward?.xpGained?`+${reward.xpGained} XP · `:'Nejlepší medaile zachována · '}Úroveň ${reward?.level??1} · ${reward?.xp??0} XP`;
-  $('resultScore').textContent=`${feedback?.score??(scored?result:0)} / 100 bodů`;
-  $('resultRecord').textContent=feedback?.record||'';
-  $('resultFeedback').textContent=feedback?`${feedback.praise} ${feedback.advice}`:'';
+  const stars=starsForMedal(medal);
+  $('resultMedal').setAttribute('aria-label',`${stars} ze 3 hvězd · ${MEDAL_NAMES[medal]}`);
+  $('resultMedal').dataset.medal=medal;
+  $('resultMedal').querySelectorAll('.result-star').forEach((star,index)=>{star.dataset.earned=String(index<stars);});
+  $('resultMedalName').textContent=MEDAL_NAMES[medal];
   $('resultSaveWarning').hidden=reward?.saved!==false;
-  $('resultCareer').textContent=`${reward?.rankUp?'Nová hodnost: ':''}${reward?.rank||'Kadet'}`;
-  const unlocks=[];
-  if(reward?.newMissions.length)unlocks.push(reward.newMissions.length>1?'Odemčeny další lokality.':`Odemčena mise ${getMission(reward.newMissions[0]).title}.`);
-  for(const model of reward?.newAircraft||[])unlocks.push(`Odemčeno letadlo ${{highWing:'Hornoplošník',lowWing:'Citation',airliner:'Boeing 787',fighter:'Super Hornet'}[model]}.`);
-  $('resultUnlocks').textContent=unlocks.join(' ');
-  $('missionResult').hidden=false;$('resultContinue').focus({preventScroll:true});
+  const achievement=newAchievements[0];
+  $('resultAchievement').hidden=!achievement;
+  if(achievement){$('resultAchievementImage').src=achievement.image;$('resultAchievementTitle').textContent=achievement.title;$('resultAchievementExtra').textContent=newAchievements.length>1?`+ další ${newAchievements.length-1} ve sbírce`:'';}
+  const promoted=reward?.rankUp&&reward.saved;
+  $('resultPromotion').hidden=!promoted;
+  if(promoted){
+    $('resultPromotionTitle').textContent=reward.rank;
+    $('resultRankInsignia').src=`/images/rank-${reward.careerLevel-1}.svg`;
+  }
+  const nextReady=reward?.nextMissionId&&reward.nextMissionId!==currentMission().id&&reward.saved!==false;
+  $('resultNext').hidden=!nextReady;
+  if(nextReady)$('resultNext').textContent=`Další mise: ${getMission(reward.nextMissionId).title} →`;
+  const unlocked=reward?.saved&&reward.newMissions?.[0];
+  $('resultUnlocks').hidden=!unlocked;
+  if(unlocked)$('resultUnlocks').textContent=`Odemčena mise: ${getMission(unlocked).title}`;
+  $('resultMenu').classList.toggle('primary',!nextReady);
+  const dialog=$('missionResult');dialog.hidden=false;
+  dialog.classList.remove('result-animate');
+  void dialog.offsetWidth;
+  dialog.classList.add('result-animate');
+  $(nextReady?'resultNext':'resultMenu').focus({preventScroll:true});
 }
-function syncControls(){
+function syncControls({keepGlobeView=false}={}){
+  const freeGlobe=menuStep===3&&!running&&!isRace()&&mode==='google';
+  if(!freeGlobe)mapDraft=null;
   for(const id of ['connectionButton','demoMode','googleMode'])$(id).disabled=busy;
   for(const id of ['demoMode','googleMode'])$(id).setAttribute('aria-pressed',String(mode===(id==='demoMode'?'demo':'google')));
-  $('startButton').disabled=busy||!viewer||!running&&!hasSelectedAircraft();
-  $('startButton').querySelector('span').textContent=running?(crashed?'Nový pokus':'Pokračovat v letu'):menuStep===1?(hasSelectedAircraft()?'Vybrat typ hry':'Vyber letadlo'):menuStep===2?(isRace()?'Vybrat misi':'Vybrat lokalitu'):mode==='demo'?'Spustit offline trénink':isRace()?'Spustit misi':'Vzlétnout';
+  $('startButton').disabled=busy||!viewer;
+  $('startButton').querySelector('span').textContent=running?(crashed?'Nový pokus':'Pokračovat v letu'):menuStep===1?'Vybrat typ hry':menuStep===2?(isRace()?'Vybrat misi':'Vybrat lokalitu'):mode==='demo'?'Spustit offline trénink':isRace()?'Spustit misi':mapDraft?'Potvrdit start':'Vzlétnout';
   $('gameMode').disabled=busy||running;
   $('aircraftModel').disabled=busy||(running&&isRace());
   for(const id of ['timeOfDay','weather'])$(id).disabled=busy||isRace();
@@ -190,7 +229,17 @@ function syncControls(){
   $('sceneTitle').textContent=mode==='demo'?'Trénink':isRace()?currentMission().location.name+' · mise':`${selection().name} · volný let`;
   $('sceneSubtitle').textContent=mode==='demo'?'SYNTETICKÁ KRAJINA':`${selection().lat.toFixed(3)}° / ${selection().lon.toFixed(3)}°`;
   $('sourceLabel').textContent=mode==='demo'?'TRÉNINKOVÁ KRAJINA • SYNTETICKÁ':'GOOGLE 3D • NÁZVY MĚST: GEONAMES';
-  syncGameMenu({running,busy,mode,hasToken:Boolean(ionToken),step:menuStep,place:isRace()?{...currentMission().location,...missionStart(currentMission())}:selectedPlace(locationKey,customLocation),mission:currentMission()});
+  const mission=currentMission();
+  const place=isRace()?{...mission.location,...missionStart(mission)}:selectedPlace(locationKey,customLocation);
+  syncGameMenu({running,busy,mode,hasToken:Boolean(ionToken),step:menuStep,place,mission,draft:mapDraft});
+  const missionGlobe=false; // HORIZONT uses one focused next-flight choice; the globe belongs to free flight.
+  destinationGlobe?.sync({
+    host:missionGlobe?$('missionGlobeHost'):freeGlobe?$('freeGlobeHost'):null,
+    mission:missionGlobe?mission:null,place,draft:mapDraft,
+    progress:missionGlobe?missionProgress():null,busy,keepView:keepGlobeView
+  });
+  $('cancelStartDraft').hidden=!mapDraft;
+  $('cancelStartDraft').disabled=busy;
   $('locationSearch').hidden=mode!=='google'||isRace();
   locationSearch?.refresh();
 }
@@ -210,6 +259,7 @@ function clearLocationCredits(){
   searchCredits=[];
 }
 function useSearchLocation(place){
+  mapDraft=null;
   clearLocationCredits();
   searchCredits=C.GeocoderService.getCreditsFromResult(place.result)||[];
   for(const credit of searchCredits)viewer.scene.frameState.creditDisplay.addStaticCredit(credit);
@@ -234,7 +284,7 @@ function endFlight(){
   crashEffect?.clear();
   $('missionResult').hidden=true;
   geographyGuide?.setMissionPlaces?.([]);
-  stopInspectDrag();exitPhotoMode();$('flightWarning').hidden=true;
+  stopInspectDrag();flightOrbit=null;exitPhotoMode();$('flightWarning').hidden=true;
   menuStep=1;running=false;paused=false;crashed=false;updateLandingNotice();keys.clear();touch.clear();$('flightUI').hidden=true;setFlightMenuVisible(false);
   $('pauseOverlay').classList.remove('crashed');
   engineAudio.stop();
@@ -277,7 +327,6 @@ async function startFlight(){
   if(isRace()&&mode!=='google'){showError('Mise vyžadují připojené Google 3D mapy.');return;}
   exitPhotoMode();
   engineAudio.unlock();
-  missionRadio.unlock();
   if(mode==='google'&&!(await prepareGoogle()))return;
   const p=selection(),token=++epoch;
   busy=true;syncControls();if(running){paused=true;keys.clear();touch.clear();}
@@ -314,12 +363,13 @@ async function startFlight(){
     startup.altitude=race.route.groundStart?ground+3:Math.max(start.altitude,ground+80);
     startup.heading=start.heading;startup.onGround=Boolean(race.route.groundStart);
     startup.wind=race.route.wind||null;startup.engineLimit=race.route.engineLimit??1;
+    startup.gustStrength=race.route.gustStrength??0;
   }
   state=initialFlight(startup);aircraft.resetEffects();surfaceHeight=ground;surfaceFlat=false;trail=[];lastTrail=0;lastSurface=0;running=true;paused=false;crashed=false;busy=false;keys.clear();touch.clear();
   resetRace();
   $('pauseOverlay').classList.remove('crashed');
   engineAudio.setThrottle(state.enginePower,state.speed);engineAudio.play();
-  if(isRace())missionRadio.play({...currentMission(),route:race.route});
+  missionRadio.play();
   viewer.scene.screenSpaceCameraController.enableInputs=false;viewer.camera.lookAtTransform(C.Matrix4.IDENTITY);aircraft.show=true;
   $('flightUI').hidden=false;setFlightMenuVisible(false);document.body.classList.add('flying','panel-hidden');
   
@@ -423,15 +473,17 @@ async function savePhoto(){
 }
 function crash(reason){
   if(crashed)return;
+  stopInspectDrag();
   if(isRace())race.fail();
   paused=true;crashed=true;$('pauseHint').hidden=true;engineAudio.pause();missionRadio.stop();keys.clear();touch.clear();setFlightMenuVisible(false);$('pauseOverlay').classList.add('crashed');$('pauseEyebrow').textContent='ZPÁTKY NA ZEMI';$('pauseTitle').textContent='Kontakt s povrchem';$('pauseText').textContent='Další pokus začíná zase bezpečně ve vzduchu.';$('resumeButton').textContent='Zkusit let znovu';
   $('flightWarning').hidden=true;updatePauseLocation();
   if(reason)$('pauseText').textContent=reason;
   aircraft.show=false;aircraft.resetEffects();
-  if(crashEffect)crashEffect.play({lat:state.lat,lon:state.lon,altitude:Number.isFinite(surfaceHeight)?surfaceHeight+1:state.altitude,size:(aircraft.chaseDistance||48)*.16,onReady:()=>{if(running&&crashed)setFlightMenuVisible(true);}});
+  engineAudio.explosion();
+  if(crashEffect)crashEffect.play({lat:state.lat,lon:state.lon,altitude:Number.isFinite(surfaceHeight)?surfaceHeight+1:state.altitude,size:(aircraft.chaseDistance||48)*.16,wind:state.wind,onReady:()=>{if(running&&crashed)setFlightMenuVisible(true);}});
   else setFlightMenuVisible(true);
 }
-function surfaceExclusions(){return [...(weatherEffects?.primitives||[]),...aircraft.entities.values,...(aircraft.surfacePrimitives||[]),...(geographyGuide?.source.entities.values||[]),...(raceView?.entities.values||[]),...(startMarker?[startMarker]:[])];}
+function surfaceExclusions(){return [...(weatherEffects?.primitives||[]),...aircraft.entities.values,...(aircraft.surfacePrimitives||[]),...(geographyGuide?.source.entities.values||[]),...(raceView?.entities.values||[])];}
 function terrainSample(lat,lon){return mode==='demo'?demo.surface(lat,lon):viewer.scene.sampleHeight(C.Cartographic.fromDegrees(lon,lat),surfaceExclusions());}
 function checkLandingSurface(){
   const sampled=terrainSample(state.lat,state.lon);
@@ -445,8 +497,7 @@ function landed(){notice('Přistál jsi. Sniž výkon klávesou S; pro vzlet př
 function runwayEvent(kind,sinkRate){
   const strength=kind==='touchdown'?Math.min(1,.5+Math.abs(sinkRate)/8):.75;
   runwayFeedback.trigger(kind,state.elapsed,strength);
-  engineAudio.tireSqueal(kind,strength);
-  missionRadio.flightEvent(kind==='touchdown'&&isRace()&&race.route.gates[race.next]?.kind==='touch-and-go'?'touch-and-go':kind);
+  missionRadio.play();
 }
 function continueFreeFlight(){
   if(!running||crashed||!isRace()||$('missionResult').hidden||race.status!=='finished')return;
@@ -457,6 +508,8 @@ function continueFreeFlight(){
   freeConditions={time:$('timeOfDay').value,weather:$('weather').value};
   locationKey='custom';customLocation={lat:state.lat,lon:state.lon,name:place.name};
   state.engineLimit=1;
+  delete state.engineFailure;
+  if(state.gustStrength){state.gustStrength=0;state.gustIntensity=0;state.wind=null;}
   startup={lat:state.lat,lon:state.lon,altitude:state.altitude,heading:state.heading/RAD,model:state.model,onGround:state.onGround,wind:state.wind,engineLimit:1};
   geographyGuide?.setMissionPlaces?.([]);
   missionRadio.stop();updateLandingNotice();
@@ -464,19 +517,33 @@ function continueFreeFlight(){
   $('panelButton').focus({preventScroll:true});
   notice('Pokračuješ ve volném letu. W / S mění výkon; můžeš znovu vzlétnout nebo pokračovat v cestě.',6000);
 }
-function restart(){if(!running)return;$('missionResult').hidden=true;crashEffect?.clear();engineAudio.pause();state=initialFlight({...startup,model:$('aircraftModel').value});aircraft.resetEffects();resetRace();trail=[];lastTrail=0;lastSurface=0;crashed=false;pauseFlight(false);if(isRace())missionRadio.play({...currentMission(),route:race.route});updateCamera();updateHUD();}
-function updateInspectCamera(pos){
-  const horizontal=inspectDistance*Math.cos(inspectElevation),height=inspectDistance*Math.sin(inspectElevation);
+function restart(){if(!running)return;$('missionResult').hidden=true;crashEffect?.clear();engineAudio.pause();state=initialFlight({...startup,model:$('aircraftModel').value});flightOrbit=null;aircraft.resetEffects();resetRace();trail=[];lastTrail=0;lastSurface=0;crashed=false;pauseFlight(false);missionRadio.play();updateCamera();updateHUD();}
+function updateOrbitCamera(pos,heading,elevation,distance,roll=0,minimumHeight=-Infinity){
+  const horizontal=distance*Math.cos(elevation);
+  const height=Math.max(minimumHeight,distance*Math.sin(elevation));
   const enu=C.Transforms.eastNorthUpToFixedFrame(pos);
-  const offset=new C.Cartesian3(-Math.sin(inspectHeading)*horizontal,-Math.cos(inspectHeading)*horizontal,height);
+  const offset=new C.Cartesian3(-Math.sin(heading)*horizontal,-Math.cos(heading)*horizontal,height);
   const camera=C.Matrix4.multiplyByPoint(enu,offset,new C.Cartesian3());
-  viewer.camera.setView({destination:camera,orientation:{heading:inspectHeading,pitch:-inspectElevation,roll:photo.active?photo.roll*RAD:0}});
+  viewer.camera.setView({destination:camera,orientation:{heading,pitch:-Math.atan2(height,horizontal),roll}});
 }
 function updateCamera(){
   const {lat,lon,altitude}=state;
   const targetAltitude=crashed&&Number.isFinite(surfaceHeight)?surfaceHeight+(aircraft.chaseDistance||48)*.09:altitude;
   const pos=C.Cartesian3.fromDegrees(lon,lat,targetAltitude);
-  if(paused&&!crashed){updateInspectCamera(pos);return;}
+  if(paused&&!crashed){
+    updateOrbitCamera(pos,inspectHeading,inspectElevation,inspectDistance,photo.active?photo.roll*RAD:0);
+    return;
+  }
+  if(!crashed&&flightOrbit){
+    const {headingOffset,elevation,distance}=flightOrbit;
+    const minimumHeight=Number.isFinite(surfaceHeight)?surfaceHeight+1-altitude:-Infinity;
+    updateOrbitCamera(pos,state.heading+headingOffset,elevation,distance,0,minimumHeight);
+    return;
+  }
+  if(!crashed&&flightCameraMode==='roof'){
+    viewer.camera.setView(aircraft.roofCameraView());
+    return;
+  }
   const vibration=flightFeedback(state,{active:running&&!paused&&!crashed&&!busy,motion:cameraMotion,turbulence:turbulenceFeedback.intensity});
   const runway=runwayFeedback.sample(state.elapsed,{active:running&&!paused&&!crashed&&!busy,motion:cameraMotion});
   vibration.pitch+=runway.pitch;vibration.roll+=runway.roll;
@@ -527,13 +594,18 @@ function drawRadar(){
 function updateFlightFeedback(){
   const active=running&&!paused&&!crashed&&!busy;
   turbulenceFeedback=turbulence.update(state,{active,weather:$('weather').value,ground:surfaceHeight});
+  if(active&&$('weather').value==='overcast'&&turbulenceFeedback.active)cloudTurbulenceSeen=true;
+  else if(active&&cloudTurbulenceSeen){cloudTurbulenceSeen=false;if(recordCloudTurbulence()){badgeGallery?.refresh();notice('Nový odznak: Skrz turbulenci',4000);}}
   const {warning,maneuverWarning}=flightFeedback(state,{active,motion:cameraMotion,turbulence:turbulenceFeedback.intensity,ground:surfaceHeight});
   const maneuverText={climb:'výrazné stoupání.',descent:'výrazné klesání.',acceleration:'zrychlení při rozjezdu.',takeoff:'vzlet a počáteční stoupání.'}[maneuverWarning];
-  const condition=turbulenceFeedback.active?'TURBULENCE · krátké poryvy vzduchu, udržuj směr letu.':maneuverText?'PRUDKÝ MANÉVR · '+maneuverText:'';
+  const gusting=active&&state.gustIntensity>.25;
+  const failure=active&&state.engineFailure;
+  const condition=gusting?'SILNÉ PORYVY · koriguj směr a náklon.':turbulenceFeedback.active?'TURBULENCE · krátké poryvy vzduchu, udržuj směr letu.':maneuverText?'PRUDKÝ MANÉVR · '+maneuverText:'';
+  const engineWarning=failure==='right'?'PRAVÝ MOTOR VYSAZEN · koriguj doleva':failure==='single'?'ZTRÁTA VÝKONU MOTORU · hlídej rychlost':'';
   const warningText=warning==='stall'?'PÁDOVÁ RYCHLOST · přidej výkon a sniž stoupání':warning==='slow'?'NÍZKÁ RYCHLOST · přidej výkon':'';
-  $('flightWarning').hidden=!warningText&&!condition;
-  $('flightWarning').dataset.level=warning||(turbulenceFeedback.active?'turbulence':maneuverWarning?'maneuver':'');
-  const message=[warningText,condition].filter(Boolean).join('\n');
+  $('flightWarning').hidden=!warningText&&!condition&&!engineWarning;
+  $('flightWarning').dataset.level=warning||(failure?'engine':gusting||turbulenceFeedback.active?'turbulence':maneuverWarning?'maneuver':'');
+  const message=[warningText,engineWarning,condition].filter(Boolean).join('\n');
   if($('flightWarning').textContent!==message)$('flightWarning').textContent=message;
   if(warning==='stall'&&(state.elapsed<lastStallBeep||state.elapsed-lastStallBeep>1.8)){
     engineAudio.stallWarning();lastStallBeep=state.elapsed;
@@ -575,7 +647,7 @@ async function init(){
     viewer.scene.sun=new C.Sun();
     viewer.scene.sun.glowFactor=1.4;
     viewer.scene.sunBloom=true;
-    weatherEffects=createWeatherEffects(viewer);
+    weatherEffects=createWeatherEffects(viewer,()=>running);
     installFlightUiLayout({document});
     viewer.scene.globe.baseColor=C.Color.fromCssColorString('#7a9466');viewer.scene.globe.enableLighting=false;viewer.scene.globe.depthTestAgainstTerrain=true;
     viewer.scene.backgroundColor=C.Color.fromCssColorString('#a4c3ca');viewer.scene.fog.density=0.00012;viewer.resolutionScale=Math.min(devicePixelRatio,1.5)/devicePixelRatio;
@@ -583,23 +655,159 @@ async function init(){
     viewer.scene.renderError.addEventListener(()=>{loading('3D zobrazení se zastavilo');$('loading').querySelector('p').textContent='Zkus obnovit stránku v prohlížeči s podporou WebGL. Pokud problém trvá, zavři ostatní 3D aplikace.';});
     daylightTint=viewer.scene.postProcessStages.add(new C.PostProcessStage({
       name:'aeronaut_daylight',
-      uniforms:{tint:new C.Cartesian3(1,1,1),saturation:1,sunset:0},
+      uniforms:{
+        tint:new C.Cartesian3(1,1,1),saturation:1,sunset:0,sunsetClouds:0,eveningHaze:0,daylightHaze:0,nightHaze:0,
+        stars:0,moon:0,moonDirection:new C.Cartesian3(1,0,0),
+        moonTexture:'/vendor/Assets/Textures/moonSmall.jpg',
+        cloudCount:()=>weatherEffects.volume.count,
+        cloudCenters:()=>weatherEffects.volume.centers,
+        cloudShapes:()=>weatherEffects.volume.shapes,
+        cloudUp:()=>weatherEffects.volume.up
+      },
       fragmentShader:`
         uniform sampler2D colorTexture;
         uniform sampler2D depthTexture;
         uniform vec3 tint;
         uniform float saturation;
         uniform float sunset;
+        uniform float sunsetClouds;
+        uniform float eveningHaze;
+        uniform float daylightHaze;
+        uniform float nightHaze;
+        uniform float stars;
+        uniform float moon;
+        uniform vec3 moonDirection;
+        uniform sampler2D moonTexture;
+        ${cloudVolumeShader}
         in vec2 v_textureCoordinates;
+
+        float sunsetWarmth(vec3 ray,vec3 up,vec3 sunAzimuth){
+          vec3 horizontal=ray-dot(ray,up)*up;
+          float towardSun=dot(horizontal,sunAzimuth)/max(length(horizontal),0.001);
+          return smoothstep(-0.18,0.75,towardSun);
+        }
+
+        vec3 nightHorizonColor(){
+          return vec3(0.66,0.71,0.72)*tint;
+        }
+
+        vec3 renderDistanceHaze(vec3 terrain,float depth){
+          vec4 eye=czm_windowToEyeCoordinates(gl_FragCoord.xy,depth);
+          vec3 offset=eye.xyz/eye.w;
+          float distanceToTerrain=length(offset);
+          if(nightHaze>0.0){
+            float haze=0.98*(1.0-exp(-max(distanceToTerrain-2200.0,0.0)/13000.0));
+            return mix(terrain,nightHorizonColor(),haze);
+          }
+          if(daylightHaze>0.0){
+            float haze=daylightHaze*(1.0-exp(-max(distanceToTerrain-2800.0,0.0)/16500.0));
+            return mix(terrain,vec3(0.66,0.75,0.80)*tint,haze);
+          }
+          // Keep nearby ground clear and soften distant contrast without hiding the terrain.
+          float haze=0.94*(1.0-exp(-max(distanceToTerrain-1800.0,0.0)/10800.0));
+          vec3 ray=czm_inverseViewRotation*normalize(offset);
+          vec3 sun=czm_inverseViewRotation*czm_sunDirectionEC;
+          vec3 up=normalize(czm_viewerPositionWC);
+          vec3 sunAzimuth=normalize(sun-dot(sun,up)*up);
+          float warmth=sunsetWarmth(ray,up,sunAzimuth)*sunset;
+          vec3 hazeColor=mix(vec3(0.57,0.51,0.47),vec3(0.73,0.44,0.32),warmth);
+          // Carry the red sky tint into the distant haze directly below it.
+          float redHaze=smoothstep(0.22,0.90,warmth)*smoothstep(-0.16,-0.025,dot(ray,up));
+          hazeColor=mix(hazeColor,vec3(0.79,0.32,0.24),redHaze);
+          return mix(terrain,hazeColor,haze);
+        }
+
+        vec3 renderSunset(vec3 sky,vec2 uv){
+          vec4 eye=czm_inverseProjection*vec4(uv*2.0-1.0,1.0,1.0);
+          vec3 ray=czm_inverseViewRotation*normalize(eye.xyz);
+          vec3 sun=czm_inverseViewRotation*czm_sunDirectionEC;
+          vec3 up=normalize(czm_viewerPositionWC);
+          float height=dot(ray,up);
+          float sunHeight=dot(sun,up);
+          float horizon=smoothstep(-0.035,0.012,height);
+          float alignment=max(0.0,dot(ray,sun));
+          vec3 sunAzimuth=normalize(sun-sunHeight*up);
+          float warmHalf=sunsetWarmth(ray,up,sunAzimuth);
+          float nearSun=pow(alignment,170.0);
+          float upperSky=smoothstep(0.025,0.64,height);
+          vec3 orange=mix(vec3(0.92,0.21,0.065),vec3(1.0,0.62,0.24),upperSky);
+          vec3 color=mix(sky,orange,warmHalf*horizon*(1.0-upperSky)*0.86);
+          color=mix(color,vec3(1.0,0.53,0.13),nearSun*horizon*0.7);
+
+          // Use angular coordinates so wisps keep their proportions across the sky.
+          vec3 across=cross(up,sunAzimuth);
+          float azimuth=atan(dot(ray,across),dot(ray,sunAzimuth));
+          vec3 cloudPoint=vec3(azimuth*12.0,height*110.0,2.4);
+          float wisps=0.65*cloudNoise(cloudPoint)
+                     +0.25*cloudNoise(cloudPoint*2.6)
+                     +0.10*cloudNoise(cloudPoint*6.4);
+          float cloud=smoothstep(0.46,0.65,wisps)*warmHalf*horizon*(1.0-upperSky)*sunsetClouds;
+          vec3 cloudColor=mix(vec3(0.24,0.12,0.13),vec3(0.70,0.30,0.16),nearSun*0.7);
+          color=mix(color,cloudColor,cloud*0.68);
+
+          // Angular size keeps the disk round at different fields of view.
+          float angle=acos(clamp(dot(ray,sun),-1.0,1.0));
+          float disk=1.0-smoothstep(0.0075,0.0096,angle);
+          float halo=exp(-angle*43.0);
+          float visible=smoothstep(-0.01,0.003,sunHeight);
+          color=mix(color,vec3(1.0,0.67,0.20),halo*visible*(1.0-cloud*0.65)*0.82);
+          return mix(color,vec3(1.0,0.94,0.63),disk*visible*(1.0-cloud*0.55));
+        }
+
+        vec3 renderNightSky(vec3 sky,vec2 uv){
+          vec4 eye=czm_inverseProjection*vec4(uv*2.0-1.0,1.0,1.0);
+          vec3 ray=czm_inverseViewRotation*normalize(eye.xyz);
+          float elevation=dot(ray,normalize(czm_viewerPositionWC));
+          float horizon=smoothstep(0.005,0.20,elevation);
+          sky*=mix(1.0,0.58,smoothstep(0.0,0.65,elevation));
+          sky=mix(nightHorizonColor(),sky,smoothstep(-0.015,0.12,elevation));
+          if(stars>0.0){
+            vec2 coordinates=vec2(atan(ray.y,ray.x)/czm_twoPi+0.5,
+                                  asin(clamp(ray.z,-1.0,1.0))/czm_pi+0.5);
+            vec2 grid=coordinates*vec2(260.0,130.0);
+            vec2 cell=floor(grid);
+            vec3 seed=vec3(mod(cell.x,260.0),cell.y,19.0);
+            float random=cloudHash(seed);
+            vec2 center=0.2+0.6*vec2(cloudHash(seed+4.0),cloudHash(seed+9.0));
+            float pixel=clamp(length(fwidth(grid))*0.65,0.012,0.085);
+            float radius=mix(0.012,0.042,random*random);
+            float star=1.0-smoothstep(radius,radius+pixel,length(fract(grid)-center));
+            sky+=vec3(0.74,0.85,1.0)*star*smoothstep(0.78,1.0,random)*horizon*0.64;
+          }
+          if(moon>0.0){
+            float alignment=dot(ray,moonDirection);
+            float angle=acos(clamp(alignment,-1.0,1.0));
+            float disk=1.0-smoothstep(0.0108,0.0120,angle);
+            sky+=vec3(0.19,0.29,0.42)*exp(-angle*39.0)*horizon;
+            if(disk>0.0){
+              vec3 right=normalize(cross(vec3(0.0,0.0,1.0),moonDirection));
+              vec3 up=cross(moonDirection,right);
+              vec2 face=vec2(dot(ray,right),dot(ray,up))/0.0118;
+              float front=sqrt(max(0.0,1.0-dot(face,face)));
+              vec2 lunarUV=vec2(atan(face.x,front)/czm_twoPi+0.5,
+                                asin(clamp(face.y,-1.0,1.0))/czm_pi+0.5);
+              float surface=texture(moonTexture,lunarUV).r;
+              vec3 moonlight=vec3(0.77,0.87,0.98)*mix(0.57,1.15,surface);
+              sky=mix(sky,moonlight,disk*horizon);
+            }
+          }
+          return sky;
+        }
+
         void main(){
           vec4 color=texture(colorTexture,v_textureCoordinates);
           float gray=dot(color.rgb,vec3(0.2126,0.7152,0.0722));
           vec3 rgb=mix(vec3(gray),color.rgb,saturation)*tint;
-          if(sunset>0.0 && czm_readDepth(depthTexture,v_textureCoordinates)>=0.999999){
-            vec4 eye=czm_inverseProjection*vec4(v_textureCoordinates*2.0-1.0,1.0,1.0);
-            float alignment=dot(normalize(eye.xyz),czm_sunDirectionEC);
-            float glow=smoothstep(0.9986,0.99997,alignment);
-            rgb=mix(rgb,rgb*vec3(1.0,0.52,0.32),glow*sunset);
+          float depth=texture(depthTexture,v_textureCoordinates).r;
+          if(sunset>0.0 && depth>=1.0){
+            rgb=renderSunset(rgb,v_textureCoordinates);
+          }else if(nightHaze>0.0 && depth>=1.0){
+            rgb=renderNightSky(rgb,v_textureCoordinates);
+          }else if((eveningHaze>0.0||daylightHaze>0.0||nightHaze>0.0) && depth<1.0){
+            rgb=renderDistanceHaze(rgb,depth);
+          }
+          if(cloudCount>0){
+            rgb=renderCloudVolumes(rgb,v_textureCoordinates,depth,tint);
           }
           out_FragColor=vec4(rgb,color.a);
         }`
@@ -609,34 +817,21 @@ async function init(){
     $('timeOfDay').onchange=()=>{try{localStorage.setItem(DAYLIGHT_STORAGE_KEY,$('timeOfDay').value);}catch{}applyTimeOfDay();};
     try{const saved=localStorage.getItem(WEATHER_STORAGE_KEY);$('weather').value=Object.hasOwn(WEATHER_PRESETS,saved)?saved:'clear';}catch{$('weather').value='clear';}
     $('weather').onchange=()=>{try{localStorage.setItem(WEATHER_STORAGE_KEY,$('weather').value);}catch{}applyTimeOfDay();};
-    raceView=createRaceView(viewer,race);
+    raceView=createRaceView(viewer,race,()=>state);
     demo=createDemo(viewer);demo.boundary.show=false;aircraft=createAircraft(viewer,()=>state,()=>surfaceHeight,(lat,lon)=>mode==='demo'?viewer.scene.sampleHeight(C.Cartographic.fromDegrees(lon,lat),surfaceExclusions())??demo.surface(lat,lon):terrainSample(lat,lon));cityLabels=createCityLabels(viewer);
     crashEffect=createCrashEffect(viewer);
     geographyGuide=createGeographyGuide(viewer,{document,onPause:()=>{if(running&&!paused&&!crashed)pauseFlight(true);}});
+    badgeGallery=createAchievementGallery(document,{onPause:()=>{if(running&&!paused&&!crashed)pauseFlight(true);}});
     cityLabels.ready.then(ready=>{if(ready&&mode==='google')cityLabels.update(selection().lat,selection().lon);});
     $('aircraftModel').value=readSavedModel();
-    $('aircraftModel').onchange=()=>{const choice=$('aircraftModel').value;if(!isAircraftUnlocked(choice)){$('aircraftModel').value='highWing';return;}saveModel(choice);aircraft.selectModel(choice);engineAudio.setModel(choice);selectFlightAircraft(state,choice);updateAircraftHandling();if(running){lastSurface=0;updateCamera();updateHUD();notice('Letové vlastnosti odpovídají vybranému letadlu.',3000);}};
+    $('aircraftModel').onchange=()=>{const choice=$('aircraftModel').value;if(!isAircraftUnlocked(choice)){$('aircraftModel').value='highWing';return;}saveModel(choice);aircraft.selectModel(choice);engineAudio.setModel(choice);selectFlightAircraft(state,choice);updateAircraftHandling();if(isRace()&&!running)applyMission();if(running){lastSurface=0;updateCamera();updateHUD();notice('Letové vlastnosti odpovídají vybranému letadlu.',3000);}};
     $('aircraftModel').addEventListener('change',()=>syncControls());
     aircraft.selectModel($('aircraftModel').value);
     engineAudio.setModel($('aircraftModel').value);
     selectFlightAircraft(state,$('aircraftModel').value);updateAircraftHandling();
     resetScene();syncControls();overview();syncSoundButton();
-    startMarker=viewer.entities.add({show:false,position:C.Cartesian3.ZERO,point:{pixelSize:13,color:C.Color.fromCssColorString('#f3c969'),outlineColor:C.Color.BLACK,outlineWidth:2,disableDepthTestDistance:Number.POSITIVE_INFINITY},label:{text:'MÍSTO STARTU',font:'600 13px sans-serif',pixelOffset:new C.Cartesian2(0,-24),fillColor:C.Color.WHITE,outlineColor:C.Color.BLACK,outlineWidth:3,style:C.LabelStyle.FILL_AND_OUTLINE,disableDepthTestDistance:Number.POSITIVE_INFINITY}});
-    const locationHandler=new C.ScreenSpaceEventHandler(viewer.canvas);
-    locationHandler.setInputAction(click=>{
-      if(!mapPickerOpen||busy)return;
-      let hit;
-      try{if(viewer.scene.pickPositionSupported)hit=viewer.scene.pickPosition(click.position);}catch{}
-      if(!hit)hit=viewer.camera.pickEllipsoid(click.position,viewer.scene.globe.ellipsoid);
-      if(!hit)return;
-      const point=C.Cartographic.fromCartesian(hit);if(!point)return;
-      const lat=point.latitude/RAD,lon=point.longitude/RAD;
-      if(!Number.isFinite(lat)||!Number.isFinite(lon)||Math.abs(lat)>80){mapDraft=null;startMarker.show=false;$('mapPickerConfirm').disabled=true;$('mapPickerCoordinates').textContent='Vyber místo mezi 80° jižní a severní šířky.';return;}
-      mapDraft={lat,lon};startMarker.position=C.Cartesian3.fromDegrees(lon,lat,Math.max(0,point.height)+12);startMarker.show=true;
-      $('mapPickerCoordinates').textContent=`${lat.toFixed(5)}° / ${lon.toFixed(5)}°`;$('mapPickerConfirm').disabled=false;
-    },C.ScreenSpaceEventType.LEFT_CLICK);
     $('cesiumContainer').addEventListener('pointerdown',event=>{
-      if(!running||!paused||crashed||busy||photo.drag||event.button!==0||event.target!==viewer.canvas)return;
+      if(!running||crashed||busy||photo.drag||event.button!==0||event.target!==viewer.canvas)return;
       event.preventDefault();photo.drag={id:event.pointerId,x:event.clientX,y:event.clientY};
       $('cesiumContainer').setPointerCapture(event.pointerId);document.body.classList.add('photo-dragging');
     });
@@ -644,11 +839,33 @@ async function init(){
       if(photo.drag?.id===event.pointerId)stopInspectDrag();
     });
     $('cesiumContainer').addEventListener('pointermove',event=>{
-      if(!running||!paused||crashed||busy||photo.drag?.id!==event.pointerId)return;
+      if(!running||crashed||busy||photo.drag?.id!==event.pointerId)return;
       const rect=$('cesiumContainer').getBoundingClientRect();
-      inspectHeading-=(event.clientX-photo.drag.x)/rect.width*2*Math.PI;
-      inspectElevation=Math.max(.03,Math.min(1.35,inspectElevation+(event.clientY-photo.drag.y)/rect.height*Math.PI));
-      photo.drag.x=event.clientX;photo.drag.y=event.clientY;updateCamera();
+      if(!rect.width||!rect.height)return;
+      const turn=(event.clientX-photo.drag.x)/rect.width*2*Math.PI;
+      const tilt=(event.clientY-photo.drag.y)/rect.height*Math.PI;
+      if(!turn&&!tilt)return;
+      if(paused){
+        inspectHeading-=turn;
+        inspectElevation=Math.max(.03,Math.min(1.35,inspectElevation+tilt));
+      }else{
+        if(!flightOrbit){
+          // A roof mount is too close for an orbit. Start that gesture at chase distance.
+          const mode=flightCameraMode==='roof'?'chase':flightCameraMode;
+          const {offset,orientation}=flightCameraPose(state,aircraft.chaseDistance||48,mode);
+          const horizontal=Math.hypot(offset.x,offset.y);
+          flightOrbit={
+            headingOffset:orientation.heading-state.heading,
+            elevation:Math.atan2(offset.z,horizontal),
+            distance:Math.hypot(horizontal,offset.z)
+          };
+        }
+        flightOrbit.headingOffset=(flightOrbit.headingOffset-turn)%(2*Math.PI);
+        flightOrbit.elevation=Math.max(-1.5,Math.min(Math.PI/2,flightOrbit.elevation+tilt));
+      }
+      photo.drag.x=event.clientX;
+      photo.drag.y=event.clientY;
+      updateCamera();
     });
     $('cesiumContainer').addEventListener('wheel',event=>{
       if(!running||!paused||crashed||busy)return;
@@ -660,17 +877,21 @@ async function init(){
       updateCamera();
     },{passive:false});
     locationSearch=createLocationSearch({C,document,
-      canSearch:()=>!busy&&!running&&menuStep===3&&mode==='google'&&!isRace()&&!mapPickerOpen,
+      canSearch:()=>!busy&&!running&&menuStep===3&&mode==='google'&&!isRace(),
       getToken:()=>ionToken,
       request:query=>withTimeout(new C.IonGeocoderService({scene:viewer.scene,accessToken:ionToken}).geocode(query),12000,'Vyhledávání vypršelo.'),
       onPick:useSearchLocation,onNeedToken:()=>openDialog('connectionDialog'),
       onResults:showLocationSearchCredits,onClear:clearLocationPreviewCredits});
+    destinationGlobe=createDestinationGlobe({C,root:$('destinationGlobe'),
+      missions:DISPLAY_MISSIONS,
+      onMission:id=>chooseMission(id,{showBriefing:true,keepGlobeView:true}),onPoint:previewStart});
     initGameMenu(syncControls,chooseLocation,chooseMission);syncControls();loading(null);requestAnimationFrame(tick);if(ionToken)prepareGoogle();
   }catch(error){console.error('Aeronaut initialization failed:',error);loading('3D prostředí se nepodařilo spustit');$('loading').querySelector('p').textContent='Při spuštění nastala chyba. Obnov stránku; pokud se chyba opakuje, dej mi vědět. Podrobnosti jsou v konzoli prohlížeče.';$('loading').querySelector('.spinner').hidden=true;}
 }
 $('demoMode').onclick=()=>{$('connectionDialog').close();setMode('demo');};$('googleMode').onclick=()=>{$('connectionDialog').close();setMode('google');};
-$('startButton').onclick=()=>{if(running)closeGameMenu();else if(menuStep<3)setMenuStep(menuStep+1);else if(isRace()&&!isMissionUnlocked(missionId))chooseMission(BRNO_MISSION_IDS.find(id=>!missionProgress().completed.has(id))||'brno');else startFlight();};$('resumeButton').onclick=()=>crashed?restart():pauseFlight(false);$('restartButton').onclick=restart;$('endButton').onclick=endFlight;$('soundButton').onclick=toggleSound;
-$('resultContinue').onclick=continueFreeFlight;$('resultRetry').onclick=restart;$('resultMenu').onclick=endFlight;
+$('startButton').onclick=()=>{if(running)closeGameMenu();else if(menuStep<3)setMenuStep(menuStep+1);else if(isRace()&&!isMissionUnlocked(missionId))chooseMission(missionProgress().nextMissionId||'first-takeoff',{showBriefing:true});else if(mapDraft)confirmStartDraft();else startFlight();};$('resumeButton').onclick=()=>crashed?restart():pauseFlight(false);$('restartButton').onclick=restart;$('endButton').onclick=endFlight;$('soundButton').onclick=toggleSound;
+$('resultContinue').onclick=continueFreeFlight;$('resultRetry').onclick=restart;$('resultMenu').onclick=()=>{endFlight();setMenuStep(3);};
+$('resultNext').onclick=()=>{const next=missionProgress().nextMissionId;if(!next)return;endFlight();setMenuStep(3);chooseMission(next,{showBriefing:true});};
 $('photoButton').onclick=enterPhotoMode;$('photoExit').onclick=exitPhotoMode;
 $('photoReset').onclick=resetPhotoCamera;$('photoCapture').onclick=savePhoto;
 $('photoHideControls').onclick=()=>setPhotoControlsHidden(true);$('photoRestoreControls').onclick=()=>setPhotoControlsHidden(false);
@@ -679,6 +900,8 @@ $('cameraMotion').onchange=()=>{cameraMotion=$('cameraMotion').checked;try{local
 function syncFlightCameraButtons(){document.querySelectorAll('[data-flight-camera]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.flightCamera===flightCameraMode)));}
 function setFlightCameraMode(selected){
   if(!FLIGHT_CAMERA_MODES.includes(selected))return;
+  stopInspectDrag();
+  flightOrbit=null;
   flightCameraMode=selected;
   try{localStorage.setItem(FLIGHT_CAMERA_STORAGE_KEY,selected);}catch{}
   syncFlightCameraButtons();
@@ -686,7 +909,7 @@ function setFlightCameraMode(selected){
 }
 function cycleFlightCamera(){
   setFlightCameraMode(FLIGHT_CAMERA_MODES[(FLIGHT_CAMERA_MODES.indexOf(flightCameraMode)+1)%FLIGHT_CAMERA_MODES.length]);
-  notice('Kamera: '+({chase:'Za letadlem',distant:'Z dálky',overhead:'Shora',front:'Zepředu',cinematic:'Filmová kamera'})[flightCameraMode],1500);
+  notice('Kamera: '+({chase:'Za letadlem',distant:'Z dálky',overhead:'Shora',front:'Zepředu',cinematic:'Filmová kamera',roof:'Nad kabinou'})[flightCameraMode],1500);
 }
 syncFlightCameraButtons();
 document.querySelectorAll('[data-flight-camera]').forEach(button=>button.onclick=()=>setFlightCameraMode(button.dataset.flightCamera));
@@ -708,40 +931,72 @@ function applyMission(){
   const mission=currentMission();race.setRoute(mission.route);raceView?.setRoute(mission.route);
   $('timeOfDay').value=mission.time;$('weather').value=mission.weather;applyTimeOfDay();
 }
-function chooseMission(id){
+function chooseMission(id,{showBriefing=false,keepGlobeView=false}={}){
   if(busy||running||!isRace())return;
-  missionId=id;applyMission();showError('');syncControls();overview();
+  missionId=id;applyMission();showError('');syncControls({keepGlobeView});overview();
+  if(showBriefing)openMissionBriefing();
+}
+function openMissionBriefing(){
+  if($('careerMapDialog').open)$('careerMapDialog').close();
+  $('missionMore').open=true;
+  openDialog('missionDetails');
+  $('missionDetails').querySelector('.mission-briefing-body').scrollTop=0;
 }
 function setMenuStep(step){
   if(busy||running)return;
-  if(step>1&&!hasSelectedAircraft()){showError('Nejprve vyber letadlo v levém sloupci.');return;}
   menuStep=step;showError('');syncControls();$('sidebar').scrollTo({top:0,behavior:'instant'});
 }
 function chooseLocation(key){
   if(busy||running||isRace())return;
   locationSearch?.cancel();
-  if(key==='custom'){openMapPicker();return;}
+  mapDraft=null;
   clearLocationCredits();locationKey=key;showError('');syncControls();overview();
 }
-async function openMapPicker(){
-  if(busy||running||isRace()||mapPickerOpen)return;
-  if(mode!=='google'){mode='google';resetScene();syncControls();}
-  if(!(await prepareGoogle()))return;
-  mapPickerOpen=true;mapDraft=null;
-  $('mapPickerCoordinates').textContent='Klikni na místo, nad kterým chceš začít.';$('mapPickerConfirm').disabled=true;
-  document.body.classList.add('location-picker');$('mapPicker').hidden=false;
-  viewer.scene.globe.show=true;viewer.scene.screenSpaceCameraController.enableInputs=true;overview();
+function previewStart(place){
+  if(busy||running||isRace()||mode!=='google'||menuStep!==3)return;
+  mapDraft=place;
+  showError('');syncControls();
 }
-function closeMapPicker(commit=false){
-  if(!mapPickerOpen)return;
-  if(commit&&mapDraft){clearLocationCredits();locationKey='custom';customLocation={...mapDraft};}
-  mapPickerOpen=false;mapDraft=null;startMarker.show=false;
-  document.body.classList.remove('location-picker');$('mapPicker').hidden=true;
-  resetScene();syncControls();overview();$('customLocationButton').focus({preventScroll:true});
+function confirmStartDraft(){
+  if(!mapDraft||busy||running||isRace()||mode!=='google'||menuStep!==3)return;
+  locationSearch?.cancel();clearLocationCredits();
+  locationKey='custom';customLocation=mapDraft;mapDraft=null;
+  showError('');syncControls();overview();
 }
+function cancelStartDraft(){
+  if(!mapDraft||busy)return;
+  mapDraft=null;
+  syncControls();
+  destinationGlobe.centerOn(selectedPlace(locationKey,customLocation));
+}
+$('randomStart').onclick=()=>{
+  const current=mapDraft||selectedPlace(locationKey,customLocation);
+  const choices=randomStartPlaces.filter(place=>place.lat!==current.lat||place.lon!==current.lon);
+  const place=choices[Math.floor(Math.random()*choices.length)];
+  previewStart(place);
+  if(mapDraft===place)destinationGlobe.centerOn(place);
+};
+$('cancelStartDraft').onclick=()=>{
+  cancelStartDraft();
+  $('randomStart').focus({preventScroll:true});
+};
+$('globeMissionDetails').onclick=openMissionBriefing;
+$('missionBriefingStart').onclick=()=>{
+  $('missionDetails').close();
+  $('startButton').click();
+};
+$('briefingAircraft').onchange=()=>{
+  const chosen=$('briefingAircraft').value;
+  if(!isAircraftUnlocked(chosen)){$('briefingAircraft').value=$('aircraftModel').value;return;}
+  $('aircraftModel').value=chosen;
+  $('aircraftModel').dispatchEvent(new Event('change',{bubbles:true}));
+};
+$('globeMissionList').onclick=()=>{
+  $('missionCards').focus({preventScroll:true});
+  $('missionListHeading').scrollIntoView({block:'start'});
+};
 $('locationBack').onclick=()=>setMenuStep(menuStep-1);
 $('stepSetup').onclick=()=>setMenuStep(1);$('stepGameType').onclick=()=>setMenuStep(2);$('stepLocation').onclick=()=>setMenuStep(3);
-$('mapPickerCancel').onclick=()=>closeMapPicker();$('mapPickerConfirm').onclick=()=>{if(mapDraft)closeMapPicker(true);};
 function closeGameMenu(){
   if(!running||!$('missionResult').hidden)return;
   document.body.classList.add('panel-hidden');
@@ -757,9 +1012,8 @@ document.querySelectorAll('[data-close]').forEach(button=>button.onclick=()=>but
 $('keyForm').onsubmit=event=>{event.preventDefault();const value=$('ionToken').value.trim();if(!value){$('ionToken').focus();return;}ionToken=value;locationSearch?.cancel();const stored=saveToken($('rememberToken').checked?value:'');if(!stored)notice('Prohlížeč nepovolil uložení tokenu. Pro tento let připojení funguje.',5000);$('ionToken').value='';epoch++;if(tileset){viewer.scene.primitives.remove(tileset);tileset=undefined;}if(running)endFlight();$('connectionDialog').close();syncControls();if(mode==='google')prepareGoogle();else setMode('google');};
 $('forgetKey').onclick=()=>{locationSearch?.cancel();ionToken='';saveToken('');$('ionToken').value='';epoch++;busy=false;if(tileset){viewer.scene.primitives.remove(tileset);tileset=undefined;}$('connectionDialog').close();setMode('demo');notice('Cesium ion token byl odstraněn z tohoto prohlížeče.');};
 window.addEventListener('keydown',event=>{
-  if(mapPickerOpen&&event.code==='Escape'){event.preventDefault();closeMapPicker();return;}
   if(running&&!$('missionResult').hidden){if(event.code==='KeyR'&&!event.repeat){event.preventDefault();restart();}else if(['Escape','Space','KeyP','KeyF'].includes(event.code))event.preventDefault();return;}
-  if(event.code==='Escape'&&!running&&menuStep>1&&!document.querySelector('dialog[open]')){event.preventDefault();setMenuStep(menuStep-1);return;}
+  if(event.code==='Escape'&&!running&&menuStep>1&&!document.querySelector('dialog[open]')){event.preventDefault();if(mapDraft)cancelStartDraft();else setMenuStep(menuStep-1);return;}
   if(event.code==='Escape'&&!photo.active&&!document.querySelector('dialog[open]')&&running){event.preventDefault();if(event.repeat)return;toggleFlightMenu();return;}
   if(photo.active&&['Escape','KeyF'].includes(event.code)){
     event.preventDefault();if(!event.repeat){exitPhotoMode();($('pauseOverlay').hidden?$('panelButton'):$('photoButton')).focus({preventScroll:true});}return;
