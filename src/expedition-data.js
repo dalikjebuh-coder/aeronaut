@@ -182,7 +182,7 @@ export const EXPEDITION_AIRPORTS={
     "runway": "10",
     "lat": 18.039389,
     "lon": -63.1197,
-    "heading": 96.0,
+    "heading": 81.5,
     "length": 2300,
     "width": 45,
     "displaced": 94

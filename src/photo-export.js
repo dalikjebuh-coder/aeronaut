@@ -52,7 +52,7 @@ export async function captureScenePhoto(viewer,{google=false,cityLabels=false,mo
   const logos=await Promise.all(logoElements.map(loadLogo));
   logos.forEach((image,index)=>{if(!image)texts.push(logoElements[index].alt||logoElements[index].title||'Mapový zdroj');});
   if(google)texts.unshift('Google Maps');
-  else texts.unshift('Tréninková krajina · Aeronaut');
+  else texts.unshift('Tréninková krajina · FlyAtlas');
   if(cityLabels)texts.push('Názvy míst: GeoNames · geonames.org · CC BY 4.0');
   if(showAircraft)texts.push(aircraftCredits[model]||aircraftCredits.lowWing);
 
@@ -84,5 +84,5 @@ export async function captureScenePhoto(viewer,{google=false,cityLabels=false,mo
 
 export function photoFilename(date=new Date()){
   const pad=value=>String(value).padStart(2,'0');
-  return`aeronaut-${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())}_${pad(date.getHours())}-${pad(date.getMinutes())}-${pad(date.getSeconds())}.png`;
+  return`flyatlas-${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())}_${pad(date.getHours())}-${pad(date.getMinutes())}-${pad(date.getSeconds())}.png`;
 }

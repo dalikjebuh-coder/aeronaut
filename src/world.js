@@ -63,7 +63,7 @@ export function createDemo(viewer){
   const boundary=entities.add({position:localPosition(0,0,20),ellipse:{semiMajorAxis:5000,semiMinorAxis:5000,fill:false,outline:true,outlineColor:C.Color.fromCssColorString('#dcf4a3').withAlpha(.45),height:20}});
   return {source,terrain,boundary,surface(lat,lon){const{x,y}=offsetMeters(lat,lon,DEMO_ORIGIN);let h=demoHeight(lat,lon);for(const b of footprints)if(Math.abs(x-b.x)<b.width/2+5&&Math.abs(y-b.y)<b.depth/2+5)h=Math.max(h,b.top);return h;}};
 }
-export function createAircraft(viewer,getState,getSurfaceHeight=()=>0,sampleSurface){
+export function createAircraft(viewer,getState,getSurfaceHeight=()=>0,sampleSurface,getTimeOfDay=()=> 'day'){
   const source=new C.CustomDataSource('Aircraft');viewer.dataSources.add(source);
   function basis(){
     const s=getState(),h=s.heading,p=s.pitch,r=s.roll;
@@ -102,7 +102,7 @@ export function createAircraft(viewer,getState,getSurfaceHeight=()=>0,sampleSurf
       up:C.Matrix4.multiplyByPointAsVector(enu,convert(0,0,1),new C.Cartesian3()),
       scale,metersPerPixel
     };
-  },()=>source.show);
+  },()=>source.show,getTimeOfDay);
   let selectedModel='highWing';
   source.roofCameraView=()=>{
     const {enu,convert}=basis();

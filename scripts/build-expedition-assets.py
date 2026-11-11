@@ -2,7 +2,7 @@ import urllib.request,urllib.parse,json,csv,io,re,concurrent.futures
 from pathlib import Path
 from html import unescape
 root=Path(__file__).resolve().parents[1]
-headers={'User-Agent':'AeronautFlightSimulator/0.1 (local educational flight game; photo attribution preserved)'}
+headers={'User-Agent':'FlyAtlasFlightSimulator/0.1 (local educational flight game; photo attribution preserved)'}
 def fetch(url):
  with urllib.request.urlopen(urllib.request.Request(url,headers=headers),timeout=35) as r:return r.read(),r.headers.get('Content-Type','')
 def api(host,params):return json.loads(fetch('https://'+host+'/w/api.php?'+urllib.parse.urlencode({'action':'query','format':'json','formatversion':2,**params}))[0])['query']['pages']
@@ -33,8 +33,10 @@ with concurrent.futures.ThreadPoolExecutor(max_workers=3) as pool:result=dict(po
 (root/'src/expedition-places.json').write_text(json.dumps(result,ensure_ascii=False,indent=2)+'\n')
 
 choices={'madeira':('LPMA','05'),'gibraltar':('LXGB','09'),'innsbruck':('LOWI','26'),'stmaarten':('TNCM','10'),'queenstown':('NZQN','05'),'santos-dumont':('SBRJ','02R'),'kansai':('RJBB','06R'),'sfo-arrival':('KSFO','28R')}
+# TNCM's upstream 96° is magnetic; the geographic route needs the 81.5° true course.
+true_heading_overrides={'stmaarten':81.5}
 airports={}
 for id,(icao,end) in choices.items():
  r=next(r for r in rows if r['airport_ident']==icao and end in [r['le_ident'],r['he_ident']]);prefix='le' if end==r['le_ident'] else 'he'
- airports[id]={'icao':icao,'runway':end,'lat':float(r[prefix+'_latitude_deg']),'lon':float(r[prefix+'_longitude_deg']),'heading':float(r[prefix+'_heading_degT']),'length':round(float(r['length_ft'])*.3048),'width':round(float(r['width_ft'])*.3048),'displaced':round(float(r[prefix+'_displaced_threshold_ft'] or 0)*.3048)}
+ airports[id]={'icao':icao,'runway':end,'lat':float(r[prefix+'_latitude_deg']),'lon':float(r[prefix+'_longitude_deg']),'heading':true_heading_overrides.get(id,float(r[prefix+'_heading_degT'])),'length':round(float(r['length_ft'])*.3048),'width':round(float(r['width_ft'])*.3048),'displaced':round(float(r[prefix+'_displaced_threshold_ft'] or 0)*.3048)}
 (root/'src/expedition-data.js').write_text('// Public-domain runway geometry: OurAirports, downloaded 2026-11-02.\n// Photo attribution: Wikimedia Commons, see each source and license link.\nexport const EXPEDITION_PLACES='+json.dumps(result,ensure_ascii=False,indent=2)+';\nexport const EXPEDITION_AIRPORTS='+json.dumps(airports,ensure_ascii=False,indent=2)+';\n')

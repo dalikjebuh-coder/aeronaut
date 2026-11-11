@@ -1,4 +1,4 @@
-name: Publish Aeronaut to GitHub Pages
+name: Publish FlyAtlas to GitHub Pages
 on:
   push:
     branches: [main]

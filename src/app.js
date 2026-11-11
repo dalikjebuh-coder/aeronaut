@@ -63,7 +63,7 @@ function saveModel(value){try{localStorage.setItem(MODEL_STORAGE_KEY,value);}cat
 let menuStep=1,locationKey='brno',customLocation=null,mapDraft=null;
 const randomStartPlaces=[...new Map([...MISSIONS.map(mission=>mission.location),...LOCATIONS].map(place=>[place.name,place])).values()];
 const RADAR_RANGE=20000;
-let viewer,demo,aircraft,cityLabels,tileset,mode='google',ionToken=window.AERONAUT_CONFIG?.cesiumIonToken||readSavedToken(),state=initialFlight({...DEMO_ORIGIN}),origin={...DEMO_ORIGIN},running=false,paused=false,crashed=false,busy=false,epoch=0;
+let viewer,demo,aircraft,cityLabels,tileset,mode='google',ionToken=window.FLYATLAS_CONFIG?.cesiumIonToken||readSavedToken(),state=initialFlight({...DEMO_ORIGIN}),origin={...DEMO_ORIGIN},running=false,paused=false,crashed=false,busy=false,epoch=0;
 let keys=new Set(),touch=new Set(),lastFrame=0,lastHud=0,lastLabels=0,lastSurface=0,surfaceHeight=0,surfaceFlat=false,trail=[],lastTrail=0,noticeTimer,noticeLock=0;
 let cameraMotion=!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches,lastStallBeep=-Infinity;
 try{const saved=localStorage.getItem('aeronaut.cameraMotion');if(saved!==null)cameraMotion=saved==='true';}catch{}
@@ -232,7 +232,7 @@ function syncControls({keepGlobeView=false}={}){
   const mission=currentMission();
   const place=isRace()?{...mission.location,...missionStart(mission)}:selectedPlace(locationKey,customLocation);
   syncGameMenu({running,busy,mode,hasToken:Boolean(ionToken),step:menuStep,place,mission,draft:mapDraft});
-  const missionGlobe=false; // HORIZONT uses one focused next-flight choice; the globe belongs to free flight.
+  const missionGlobe=false; // FlyAtlas uses one focused next-flight choice; the globe belongs to free flight.
   destinationGlobe?.sync({
     host:missionGlobe?$('missionGlobeHost'):freeGlobe?$('freeGlobeHost'):null,
     mission:missionGlobe?mission:null,place,draft:mapDraft,
@@ -654,7 +654,7 @@ async function init(){
     viewer.scene.skyAtmosphere.show=true;viewer.scene.screenSpaceCameraController.minimumZoomDistance=30;
     viewer.scene.renderError.addEventListener(()=>{loading('3D zobrazení se zastavilo');$('loading').querySelector('p').textContent='Zkus obnovit stránku v prohlížeči s podporou WebGL. Pokud problém trvá, zavři ostatní 3D aplikace.';});
     daylightTint=viewer.scene.postProcessStages.add(new C.PostProcessStage({
-      name:'aeronaut_daylight',
+      name:'flyatlas_daylight',
       uniforms:{
         tint:new C.Cartesian3(1,1,1),saturation:1,sunset:0,sunsetClouds:0,eveningHaze:0,daylightHaze:0,nightHaze:0,
         stars:0,moon:0,moonDirection:new C.Cartesian3(1,0,0),
@@ -818,7 +818,7 @@ async function init(){
     try{const saved=localStorage.getItem(WEATHER_STORAGE_KEY);$('weather').value=Object.hasOwn(WEATHER_PRESETS,saved)?saved:'clear';}catch{$('weather').value='clear';}
     $('weather').onchange=()=>{try{localStorage.setItem(WEATHER_STORAGE_KEY,$('weather').value);}catch{}applyTimeOfDay();};
     raceView=createRaceView(viewer,race,()=>state);
-    demo=createDemo(viewer);demo.boundary.show=false;aircraft=createAircraft(viewer,()=>state,()=>surfaceHeight,(lat,lon)=>mode==='demo'?viewer.scene.sampleHeight(C.Cartographic.fromDegrees(lon,lat),surfaceExclusions())??demo.surface(lat,lon):terrainSample(lat,lon));cityLabels=createCityLabels(viewer);
+    demo=createDemo(viewer);demo.boundary.show=false;aircraft=createAircraft(viewer,()=>state,()=>surfaceHeight,(lat,lon)=>mode==='demo'?viewer.scene.sampleHeight(C.Cartographic.fromDegrees(lon,lat),surfaceExclusions())??demo.surface(lat,lon):terrainSample(lat,lon),()=>$('timeOfDay').value);cityLabels=createCityLabels(viewer);
     crashEffect=createCrashEffect(viewer);
     geographyGuide=createGeographyGuide(viewer,{document,onPause:()=>{if(running&&!paused&&!crashed)pauseFlight(true);}});
     badgeGallery=createAchievementGallery(document,{onPause:()=>{if(running&&!paused&&!crashed)pauseFlight(true);}});
@@ -886,7 +886,7 @@ async function init(){
       missions:DISPLAY_MISSIONS,
       onMission:id=>chooseMission(id,{showBriefing:true,keepGlobeView:true}),onPoint:previewStart});
     initGameMenu(syncControls,chooseLocation,chooseMission);syncControls();loading(null);requestAnimationFrame(tick);if(ionToken)prepareGoogle();
-  }catch(error){console.error('Aeronaut initialization failed:',error);loading('3D prostředí se nepodařilo spustit');$('loading').querySelector('p').textContent='Při spuštění nastala chyba. Obnov stránku; pokud se chyba opakuje, dej mi vědět. Podrobnosti jsou v konzoli prohlížeče.';$('loading').querySelector('.spinner').hidden=true;}
+  }catch(error){console.error('FlyAtlas initialization failed:',error);loading('3D prostředí se nepodařilo spustit');$('loading').querySelector('p').textContent='Při spuštění nastala chyba. Obnov stránku; pokud se chyba opakuje, dej mi vědět. Podrobnosti jsou v konzoli prohlížeče.';$('loading').querySelector('.spinner').hidden=true;}
 }
 $('demoMode').onclick=()=>{$('connectionDialog').close();setMode('demo');};$('googleMode').onclick=()=>{$('connectionDialog').close();setMode('google');};
 $('startButton').onclick=()=>{if(running)closeGameMenu();else if(menuStep<3)setMenuStep(menuStep+1);else if(isRace()&&!isMissionUnlocked(missionId))chooseMission(missionProgress().nextMissionId||'first-takeoff',{showBriefing:true});else if(mapDraft)confirmStartDraft();else startFlight();};$('resumeButton').onclick=()=>crashed?restart():pauseFlight(false);$('restartButton').onclick=restart;$('endButton').onclick=endFlight;$('soundButton').onclick=toggleSound;

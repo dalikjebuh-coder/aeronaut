@@ -1,4 +1,4 @@
-/* HORIZONT career presentation. Images are local existing mission art/photos. */
+/* FlyAtlas career presentation. Images are local existing mission art/photos. */
 .horizon-ui .career-hero{position:relative;flex:none;min-height:155px;overflow:hidden;border:1px solid #dcbf7b55;border-radius:8px;padding:20px 17px 16px;background:linear-gradient(90deg,#071726e8 4%,#071726a4 72%),linear-gradient(0deg,#071726dd,transparent 65%),var(--career-image) center/cover;color:#fff}
 .horizon-ui .career-hero>span,.horizon-ui .career-hero>small{position:relative;color:#f1cf82;font-size:10px;font-weight:700;letter-spacing:1.5px}
 .horizon-ui .career-hero h2{position:relative;margin:13px 0 6px;font:600 27px/1.05 var(--font-game);letter-spacing:-.8px}

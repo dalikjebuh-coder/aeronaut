@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {aircraftEffectLevels,WakeHistory} from '../src/aircraft-effects.js';
+import {aircraftEffectLevels,aircraftLightLevels,EFFECT_ANCHORS,WakeHistory} from '../src/aircraft-effects.js';
 import {initialFlight,RAD} from '../src/flight.js';
 
 test('wing vapor reacts to bank and pull-up, never to level flight or ground roll',()=>{
@@ -40,4 +40,25 @@ test('wake history freezes with simulation time, expires, stays bounded and rese
   assert.equal(JSON.stringify(wake.samples),saved);
   wake.trim(time+3);assert.equal(wake.samples.length,0);
   wake.reset();wake.emit(0,{point:[0,0,0]});assert.equal(wake.samples.length,1);
+});
+
+test('aircraft lights stay attached to left and right wings for every model',()=>{
+  for(const [model,anchors] of Object.entries(EFFECT_ANCHORS)){
+    assert(anchors.wings[0][0]<0,`${model} left wing`);
+    assert(anchors.wings[1][0]>0,`${model} right wing`);
+    assert.equal(anchors.wings[0][0],-anchors.wings[1][0],model);
+    assert.equal(anchors.beacon[0],0,`${model} fuselage beacon`);
+  }
+});
+
+test('night lights are stronger, with short wing flashes and a pulsing beacon',()=>{
+  assert.equal(aircraftLightLevels(0,'night').visibility,1);
+  assert(aircraftLightLevels(0,'day').visibility<.2);
+  assert.equal(aircraftLightLevels(.03,'night').strobe,1);
+  assert.equal(aircraftLightLevels(.1,'night').strobe,0);
+  assert.equal(aircraftLightLevels(.16,'night').strobe,1);
+  assert.equal(aircraftLightLevels(.3,'night').strobe,0);
+  assert(aircraftLightLevels(.25,'night').beacon>.9);
+  assert(aircraftLightLevels(.75,'night').beacon<.01);
+  assert.equal(aircraftLightLevels(.03,'night',true).strobe,aircraftLightLevels(.3,'night',true).strobe);
 });

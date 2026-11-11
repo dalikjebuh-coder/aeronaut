@@ -5,7 +5,7 @@ export const CHAPTERS=Object.freeze([
   {title:'První služba',rank:'Pilot',award:'První služba',image:'/images/mission-fuji-v1.jpg',intro:'První skutečné lety tě zavedou za hranice domovského letiště. Posádka se učí spoléhat na tvé rozhodnutí.',ids:['fuji','giza','rio','iceland','stmaarten','kansai']},
   {title:'Za hranicí komfortu',rank:'Zkušený pilot',award:'Zkušený pilot',image:'/images/location-sf-v1.jpg',intro:'Města, noc a nízký let. Známé postupy platí, ale prostor pro chybu se zmenšuje.',ids:['sf','paris','nyc','sydney-harbour','grandcanyon','cape-peninsula']},
   {title:'Pod tlakem',rank:'Velitel letu',award:'Velitelské křídlo',image:'/images/world-madeira-v1.jpg',intro:'Přicházejí náročné přílety a těsný terén. Instruktorka už jen sleduje, jak vedeš let.',ids:['canyon-patrol','sfo-arrival','queenstown','madeira','innsbruck','monument-valley']},
-  {title:'Velitelská zkouška',rank:'Kapitán',award:'Šéfpilot HORIZONTU',image:'/images/mission-everest-v1.jpg',intro:'Pět posledních letů. Každý prověří jinou dovednost; cílem je bezpečně dovést celou kariéru do konce.',ids:['matterhorn','gibraltar','santos-dumont','iguazu','everest']}
+  {title:'Velitelská zkouška',rank:'Kapitán',award:'Šéfpilot FlyAtlasu',image:'/images/mission-everest-v1.jpg',intro:'Pět posledních letů. Každý prověří jinou dovednost; cílem je bezpečně dovést celou kariéru do konce.',ids:['matterhorn','gibraltar','santos-dumont','iguazu','everest']}
 ]);
 export const CAREER_IDS=Object.freeze(CHAPTERS.flatMap(chapter=>chapter.ids));
 export const CHAPTER_STARTS=Object.freeze([0,...CHAPTERS.slice(0,-1).map((_,index)=>CHAPTERS.slice(0,index+1).reduce((sum,chapter)=>sum+chapter.ids.length,0))]);

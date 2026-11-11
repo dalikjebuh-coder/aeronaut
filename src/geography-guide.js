@@ -2,7 +2,7 @@ import {createGeographyExplorer,WIKI_LICENSE,pointDistance} from './geography.js
 import {shortPlaceText,collectionProgress,createFlyoverCards,FLYOVER_RADIUS_METERS} from './geography-cards.js';
 
 const formatDistance=distance=>distance<1000?`${Math.round(distance)} m`:`${(distance/1000).toFixed(1)} km`;
-const localPhotoSource=src=>{const base=globalThis.window?.AERONAUT_CONFIG?.basePath||'/';return typeof src==='string'&&src.startsWith(base)&&/^images\/places\/wiki-[a-z0-9-]+\.(jpg|png)$/.test(src.slice(base.length));};
+const localPhotoSource=src=>{const base=globalThis.window?.FLYATLAS_CONFIG?.basePath||'/';return typeof src==='string'&&src.startsWith(base)&&/^images\/places\/wiki-[a-z0-9-]+\.(jpg|png)$/.test(src.slice(base.length));};
 const photoSource=point=>localPhotoSource(point.photo?.src)||/^https:\/\/(upload|thumb)\.wikimedia\.org\//.test(point.photo?.src||'')?point.photo.src:null;
 const photoPage=point=>point.photo?.url?.startsWith('https://commons.wikimedia.org/wiki/')?point.photo.url:point.url;
 export function createGeographyGuide(viewer,{document,storage,fetcher=globalThis.fetch,onPause=()=>{},now=Date.now}={}){

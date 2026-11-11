@@ -9,7 +9,7 @@ import {resolveRouteSurface,routeSurfacePoints} from '../src/mission-difficulty.
 import {missionProgress,recordMissionCompletion,recordMissionResult,BRNO_MISSION_IDS} from '../src/mission-progression.js';
 import {missionRecordKey} from '../src/mission-performance.js';
 import {missionRadioLine} from '../src/mission-radio.js';
-import {RAD,EARTH,aircraftProfile,resolveGroundContact} from '../src/flight.js';
+import {RAD,EARTH,offsetMeters,aircraftProfile,resolveGroundContact} from '../src/flight.js';
 import {landingOffset} from '../src/mission-objectives.js';
 import {CAREER_IDS} from '../src/campaign.js';
 
@@ -60,6 +60,26 @@ test('eight real airport arrivals complete approach, physical touchdown and any 
     assert.ok(target.along+objective.halfLength<airport.length-airport.displaced);
     assert.ok(missionRadioLine(mission).text.includes('runway'));
   }
+});
+
+test('Sint Maarten landing rectangle stays on runway 10 rather than the sea',()=>{
+  const runway=JSON.parse(fs.readFileSync(new URL('../src/expedition-runways.json',import.meta.url)))
+    .find(item=>item.airport_ident==='TNCM'&&item.le_ident==='10');
+  const west={lat:Number(runway.le_latitude_deg),lon:Number(runway.le_longitude_deg)};
+  const east={lat:Number(runway.he_latitude_deg),lon:Number(runway.he_longitude_deg)};
+  const axis=offsetMeters(east.lat,east.lon,west),angle=Math.atan2(axis.x,axis.y);
+  const route=getMission('stmaarten').route,goal=route.gates.at(-1),center=offsetMeters(goal.lat,goal.lon,west);
+  const heading=route.objective.heading*RAD;
+  assert.ok(Math.abs(heading-angle)<1*RAD,'route heading follows the geographic runway axis');
+  for(const along of [-route.objective.halfLength,route.objective.halfLength])
+    for(const across of [-route.objective.halfWidth,route.objective.halfWidth]){
+      const x=center.x+along*Math.sin(heading)+across*Math.cos(heading);
+      const y=center.y+along*Math.cos(heading)-across*Math.sin(heading);
+      const runwayAlong=x*Math.sin(angle)+y*Math.cos(angle);
+      const runwayAcross=x*Math.cos(angle)-y*Math.sin(angle);
+      assert.ok(runwayAlong>0&&runwayAlong<route.airport.length,'rectangle is between runway ends');
+      assert.ok(Math.abs(runwayAcross)<route.airport.width/2,'rectangle is inside runway edges');
+    }
 });
 
 test('aircraft get distinct approach geometry and records without mutating the trainer route',()=>{

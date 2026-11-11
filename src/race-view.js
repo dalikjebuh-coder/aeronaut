@@ -2,7 +2,7 @@ import {BRNO_ROUTE,gateFrame} from './brno-race.js';
 import {discoveryCone} from './mission-objectives.js';
 
 function routeDashMaterial(C,viewer,getAircraft){
-  const type='AeronautRouteDash',aircraftWorld=new C.Cartesian3();
+  const type='FlyAtlasRouteDash',aircraftWorld=new C.Cartesian3();
   // Entity polylines resolve their material type through Cesium's Fabric cache.
   C.Material._materialCache.addMaterial(type,{translucent:true,fabric:{
     type,

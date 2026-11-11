@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {MISSIONS,getMission,getPlayableMission,missionStart} from '../src/missions.js';
 import {DIFFICULTIES,routeSurfacePoints,resolveRouteSurface,underpassSurface} from '../src/mission-difficulty.js';
 import {BrnoRace,gateFrame} from '../src/brno-race.js';
-import {RAD,EARTH} from '../src/flight.js';
+import {RAD,EARTH,offsetMeters} from '../src/flight.js';
 
 function point(route,index,along,elapsed,vertical=0,lateral=0){
   const {center,normal,right}=gateFrame(index,route),anchor=route.gates[0];
@@ -97,4 +97,32 @@ test('the mission menu uses narrower routes with terrain-skimming and bridge gat
     assert.equal(race.status,'finished',id);
   }
   assert.equal(getPlayableMission('sf','highWing').route.gates.at(-1).underpass.ceiling,55);
+});
+
+test('Hudson Express follows a forgiving Midtown corridor above sampled buildings',()=>{
+  const route=getPlayableMission('nyc','highWing').route;
+  assert.equal(route.gates.length,5);
+  assert.ok(route.gates.every(gate=>gate.radius>=70&&!gate.groundSkim));
+  assert.ok(route.gates.every(gate=>gate.clearance>=gate.radius+75));
+  assert.ok(route.gates.some(gate=>/Times Square/.test(gate.name)));
+  assert.ok(route.gates.some(gate=>/Flatiron/.test(gate.name)));
+  const legs=route.gates.slice(1).map((gate,index)=>offsetMeters(gate.lat,gate.lon,route.gates[index]));
+  assert.ok(legs.every(leg=>Math.hypot(leg.x,leg.y)>350));
+  for(let index=1;index<legs.length;index++){
+    const a=legs[index-1],b=legs[index];
+    const turn=Math.abs(Math.atan2(a.x*b.y-a.y*b.x,a.x*b.x+a.y*b.y)/RAD);
+    assert.ok(turn<15,`abrupt turn at leg ${index}: ${turn}°`);
+  }
+  const surfaces=routeSurfacePoints(route).map((_,index)=>190+(index%3)*30);
+  const preparedRoute=resolveRouteSurface(route,surfaces);
+  preparedRoute.gates.forEach((gate,index)=>{
+    const highest=Math.max(...surfaces.slice(index*3,index*3+3));
+    assert.ok(gate.altitude-gate.radius>=highest+75);
+  });
+  const race=new BrnoRace(preparedRoute);
+  for(let index=0;index<5;index++){
+    race.update(point(preparedRoute,index,-50,index*20,0,30));
+    race.update(point(preparedRoute,index,50,index*20+1,0,30));
+  }
+  assert.equal(race.status,'finished');
 });

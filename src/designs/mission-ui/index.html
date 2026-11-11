@@ -2,14 +2,14 @@
 <html lang="cs">
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Aeronaut · Tři návrhy výběru mise</title>
+  <title>FlyAtlas · Tři návrhy výběru mise</title>
   <meta name="color-scheme" content="dark light">
   <link rel="stylesheet" href="styles.css">
   <script type="module" src="preview.js"></script>
 </head>
 <body>
   <div class="review-toolbar">
-    <a class="return-game" href="/" aria-label="Zpět do hry">← Aeronaut</a>
+    <a class="return-game" href="/" aria-label="Zpět do hry">← FlyAtlas</a>
     <nav class="design-tabs" aria-label="Návrh vzhledu">
       <button data-design="horizon" aria-pressed="true"><b>A</b><span>Horizont</span></button>
       <button data-design="atlas" aria-pressed="false"><b>B</b><span>Atlas</span></button>
@@ -21,7 +21,7 @@
   <main id="designStage" class="game-stage theme-horizon" aria-label="Náhled obrazovky výběru mise">
     <img class="scene-photo" data-hero-image alt="" fetchpriority="high">
     <div class="scene-shade"></div><div class="vector-grid"></div>
-    <header class="game-header"><a class="game-brand" href="/" aria-label="Aeronaut"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="m16 3 3 11 10 6v3l-10-3v6l4 3-7-2-7 2 4-3v-6L3 23v-3l10-6z"/></svg>AERONAUT</a><nav aria-label="Kroky přípravy"><span>Letadlo</span><i>›</i><span>Režim</span><i>›</i><strong>Mise</strong></nav><span class="header-aircraft"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="m16 3 3 11 10 6v3l-10-3v6l4 3-7-2-7 2 4-3v-6L3 23v-3l10-6z"/></svg>Hornoplošník</span></header>
+    <header class="game-header"><a class="game-brand" href="/" aria-label="FlyAtlas"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="m16 3 3 11 10 6v3l-10-3v6l4 3-7-2-7 2 4-3v-6L3 23v-3l10-6z"/></svg>FlyAtlas</a><nav aria-label="Kroky přípravy"><span>Letadlo</span><i>›</i><span>Režim</span><i>›</i><strong>Mise</strong></nav><span class="header-aircraft"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="m16 3 3 11 10 6v3l-10-3v6l4 3-7-2-7 2 4-3v-6L3 23v-3l10-6z"/></svg>Hornoplošník</span></header>
     <section class="mission-rail" aria-labelledby="missionListTitle">
       <div class="rail-heading"><h2 id="missionListTitle">Vyber misi.</h2><span id="missionCount"></span></div>
       <div class="rail-filter"><label class="sr-only" for="missionType">Typ mise</label><select id="missionType"><option value="all">Všechny mise</option><option value="time">Časovky</option><option value="sightseeing">Objevování</option><option value="landing">Přistání</option><option value="lowflight">Nízké lety</option></select><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 10 5 5 5-5"/></svg></div>
@@ -41,7 +41,7 @@
         </div>
       </div>
     </section>
-    <div class="game-corner-mark" aria-hidden="true">AERONAUT / WORLD FLIGHT</div>
+    <div class="game-corner-mark" aria-hidden="true">FlyAtlas / WORLD FLIGHT</div>
   </main>
   <footer class="review-footer"><p id="reviewHint">Vyzkoušej výběr mise a obtížnosti. Toto je samostatný náhled vzhledu.</p><button id="chooseDesign" type="button">Vybrat návrh A <span>↗</span></button></footer>
   <div id="previewToast" class="preview-toast" role="status" hidden></div>

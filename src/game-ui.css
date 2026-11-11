@@ -1,4 +1,4 @@
-/* Aeronaut / Brno — game shell. Existing renderer and photo controls stay underneath. */
+/* FlyAtlas / Brno — game shell. Existing renderer and photo controls stay underneath. */
 :root{--lime:#f3c969;--text:#e9eff5;--muted:#8294a6;--panel:#101c28;--line:#9fb9d21c;--game-bg:#080e16;--accent:#f3c969;--font-game:'Space Grotesk',Inter,system-ui,sans-serif}
 body{background:var(--game-bg);color:var(--text);font-family:Inter,system-ui,sans-serif}
 [hidden]{display:none!important}

@@ -20,7 +20,8 @@ const HARD={
   prague:[[50.064,14.414,'Vltava pod Vyšehradem'],[50.0775,14.4107,'Slovanský ostrov'],[50.0835,14.4077,'Kampa'],[50.0915,14.414,'Oblouk pod Letnou'],[50.099,14.424,'Štvanice']],
   sf:[[37.823,-122.432,'Západně od Alcatrazu'],[37.81,-122.433,'Fort Mason'],[37.81,-122.455,'Crissy Field'],[37.8203,-122.47,'Nástup k mostu'],[37.8203,-122.4785,'Pod Golden Gate']],
   paris:[[48.856,2.287,'Seina u Bir-Hakeim'],[48.8588,2.301,'Quai Branly'],[48.864,2.313,'Nad Seinou'],[48.8605,2.329,'Musée d’Orsay'],[48.8565,2.339,'Pont Neuf']],
-  nyc:[[40.758,-73.9855,'Times Square'],[40.7535,-73.9831,'Bryant Park'],[40.75,-73.9882,'Broadway mezi mrakodrapy'],[40.7455,-73.9881,'Madison Square'],[40.7412,-73.9897,'Flatiron / Broadway']]
+  // Follow Broadway south through Midtown; the plazas give room to line up each turn.
+  nyc:[[40.758,-73.9855,'Times Square',150],[40.754,-73.9864,'Broadway v Midtownu',160],[40.7497,-73.9878,'Herald Square',155],[40.7455,-73.989,'Madison Square',165],[40.7412,-73.9897,'Flatiron / Broadway',150]]
 };
 function nudge(point,north,east){return{lat:point.lat+north/EARTH/RAD,lon:point.lon+east/(EARTH*Math.cos(point.lat*RAD))/RAD};}
 
@@ -33,19 +34,19 @@ export function missionVariant(mission,level='easy'){
   const clearances=hard?[120,32,95,32,40]:[280,150,260,140,220];
   const radius=hard?24:90;
   const gates=nodes.map(([lat,lon,label,height],index)=>({lat,lon,name:label+(index===0?' · START':index===nodes.length-1?' · CÍL':''),radius,clearance:height??(mission.route.terrainFollowing?(hard?[180,65,160,60,100]:[600,350,550,300,450])[index]:clearances[index]),altitude:mission.route.altitude+[0,-120,60,-140,-60][index]}));
-  if(hard&&mission.id==='nyc')gates.forEach(gate=>{gate.radius=12;});
+  if(hard&&mission.id==='nyc')gates.forEach(gate=>{gate.radius=70;});
   if(hard&&mission.id==='sf'){
     // Sample the water east of the span rather than the bridge deck.
     gates[4]={...gates[4],radius:18,clearance:30,surfaceReference:{lat:37.8203,lon:-122.4735},underpass:{halfLength:95,halfWidth:55,ceiling:55}};
   }
-  return{...mission,level:difficulty,route:{...mission.route,id:mission.route.id+'-'+difficulty+'-v1',radius,gates}};
+  return{...mission,level:difficulty,route:{...mission.route,id:mission.route.id+'-'+difficulty+(hard&&mission.id==='nyc'?'-v2':'-v1'),radius,gates}};
 }
 
 const challengeDetails={
   prague:{skim:[1,2],brief:'Sestup k Vltavě a proleť nízko podél nábřeží. Před zatáčkami zpomal.'},
   sf:{brief:'Sestup nad vodu. Poslední brána vede pod středním rozpětím Golden Gate.'},
   paris:{skim:[2,4],brief:'V noci sleduj Seinu. Nízké brány tě povedou těsně nad řekou.'},
-  nyc:{skim:[1,2,3],brief:'Sestup do úzkých průletů na Manhattanu. Srovnej směr včas a mezi vysokými budovami zpomal.'},
+  nyc:{brief:'Leť po Broadway mezi mrakodrapy přes Times Square, Herald Square a Flatiron. Široké brány a plynulá trasa ti dávají čas na korekce.'},
   matterhorn:{skim:[2,3],wind:{north:-4,east:6},gustStrength:.85,brief:'Pod hřebenem se drž u svahu. V horských poryvech průběžně koriguj náklon i výšku.'},
   grandcanyon:{skim:[1,3],brief:'Sestup ke Coloradu a proleť nízko mezi skalními stěnami. Další zatáčku si připrav před branou.'},
   'canyon-patrol':{minimumScore:55,brief:'Sleduj řeku v úzkém výškovém pásmu i mezi branami. Připrav si další zatáčku předem.'},

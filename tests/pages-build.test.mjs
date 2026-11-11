@@ -32,8 +32,8 @@ test('published game resolves its scripts, map workers, photos, models and audio
       }
       const sandbox={window:{}};
       vm.runInNewContext(await readFile(join(outDir,'config.js'),'utf8'),sandbox);
-      assert.equal(sandbox.window.AERONAUT_CONFIG.cesiumIonToken,token);
-      assert.equal(sandbox.window.AERONAUT_CONFIG.basePath,basePath);
+      assert.equal(sandbox.window.FLYATLAS_CONFIG.cesiumIonToken,token);
+      assert.equal(sandbox.window.FLYATLAS_CONFIG.basePath,basePath);
       for(const file of ['vendor/Assets/approximateTerrainHeights.json','vendor/Workers/createBoxGeometry.js','models/citation2.glb','audio/propeller.ogg','.nojekyll'])await access(join(outDir,file));
       assert.ok(basePath==='/'||!html.includes('\"'+basePath+'>'), 'SVG closing tags must not be rewritten as asset URLs');
       const labels=await readFile(join(outDir,'city-labels.js'),'utf8');
@@ -53,7 +53,7 @@ test('published game resolves its scripts, map workers, photos, models and audio
       }
       sandbox.point={photo:{src:'https://evil.example/photo.jpg'}};
       assert.equal(vm.runInNewContext('(()=>{'+guard+'\nreturn photoSource(point);})()',{...sandbox}),null);
-      assert.ok((await readFile(join(outDir,'app.js'),'utf8')).includes('ionToken=window.AERONAUT_CONFIG?.cesiumIonToken||readSavedToken()'));
+      assert.ok((await readFile(join(outDir,'app.js'),'utf8')).includes('ionToken=window.FLYATLAS_CONFIG?.cesiumIonToken||readSavedToken()'));
     }
   }finally{await rm(temp,{recursive:true,force:true});}
 });

@@ -17,4 +17,4 @@ const server = http.createServer(async (req,res) => {
     res.end(data);
   } catch {res.writeHead(404).end('Not found');}
 });
-server.listen(Number(process.env.PORT || 4387),'127.0.0.1',()=>console.log(`Aeronaut: http://127.0.0.1:${server.address().port}`));
+server.listen(Number(process.env.PORT || 4387),'127.0.0.1',()=>console.log(`FlyAtlas: http://127.0.0.1:${server.address().port}`));

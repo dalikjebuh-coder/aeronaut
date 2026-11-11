@@ -41,7 +41,7 @@ export async function buildPages({outDir=resolve(root,'dist'),basePath='/',token
   }
   await rewrite(outDir);
   await cp(resolve(root,'node_modules/cesium/Build/Cesium'),resolve(outDir,'vendor'),{recursive:true});
-  await writeFile(resolve(outDir,'config.js'),`// Public browser configuration; never put administrative credentials here.\nwindow.AERONAUT_CONFIG=${JSON.stringify({basePath:base,cesiumIonToken:token})};\n`);
+  await writeFile(resolve(outDir,'config.js'),`// Public browser configuration; never put administrative credentials here.\nwindow.FLYATLAS_CONFIG=${JSON.stringify({basePath:base,cesiumIonToken:token})};\n`);
   await writeFile(resolve(outDir,'.nojekyll'),'');
   return {outDir,basePath:base,hasMapToken:Boolean(token)};
 }

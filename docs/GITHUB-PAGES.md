@@ -1,6 +1,6 @@
-# Sdílení Aeronautu přes GitHub Pages
+# Sdílení FlyAtlasu přes GitHub Pages
 
-Veřejná hra: **https://dalikjebuh-coder.github.io/aeronaut/**. Repozitář: **https://github.com/dalikjebuh-coder/aeronaut**.
+Veřejná hra FlyAtlas: **https://dalikjebuh-coder.github.io/aeronaut/**. Repozitář: **https://github.com/dalikjebuh-coder/aeronaut**. Starý název v adrese a názvu repozitáře zůstává kvůli funkčním odkazům a nastavení publikování.
 
 Hra se sestavuje do `dist/`, včetně modelů, zvuků a Cesium knihoven. Návštěvníci nepotřebují účet GitHub. Mapové připojení nasazené verze zajišťuje společný token z nastavení publikování.
 
@@ -11,7 +11,7 @@ Hra se sestavuje do `dist/`, včetně modelů, zvuků a Cesium knihoven. Návšt
 3. V Settings → Pages nastav Source na **GitHub Actions**.
 4. V Cesium ion vytvoř samostatný token pro veřejnou hru. Povol `assets:read` jen pro Google Photorealistic 3D Tiles (asset 2275207) a přidej `geocode` pro vyhledávání míst. V Allowed URLs nastav `https://dalikjebuh-coder.github.io/`. Safari u požadavků na Cesium předává doménu bez cesty `/aeronaut/`. Pokud Cesium při změně nastavení vydá novou hodnotu tokenu, aktualizuj ji také na GitHubu a spusť nové nasazení.
 5. V GitHub Settings → Secrets and variables → Actions ulož tento token jako repository secret **CESIUM_ION_TOKEN**. Nikdy nepoužívej administrátorský token. Přestože vstup je GitHub secret, sestavená hra tento veřejný mapový token potřebuje v prohlížeči a návštěvníci ho mohou přečíst. Proto je omezení URL a oprávnění nutné.
-6. Nahraj větev `main` nebo v Actions ručně spusť **Publish Aeronaut to GitHub Pages**. Pracovní postup ověří hru, sestaví ji a publikuje. Finální adresu potvrdí výsledek úlohy deploy.
+6. Nahraj větev `main` nebo v Actions ručně spusť **Publish FlyAtlas to GitHub Pages**. Pracovní postup ověří hru, sestaví ji a publikuje. Finální adresu potvrdí výsledek úlohy deploy.
 7. Otevři odkaz v čistém prohlížeči bez uloženého tokenu. Ověř připojení map, start mise a ovládání na telefonu i PC. Bez nakonfigurovaného tokenu stránka poběží, ale mapy budou dál vyžadovat připojení.
 
 Další změny na větvi `main` automaticky aktualizují web. Výsledky hráče se ukládají v jeho prohlížeči a mezi zařízeními se nesynchronizují. Původní místní výsledky se na novou webovou adresu nepřenesou.

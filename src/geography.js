@@ -52,7 +52,7 @@ export function createGeographyExplorer({seeds=[],fetcher=globalThis.fetch,now=D
       let items=[];
       for(const language of ['cs','en']){
         if(token!==generation||!enabled||controller.signal.aborted)return;
-        const response=await fetcher(wikiNearbyUrl(state.lat,state.lon,language),{signal:controller.signal,credentials:'omit',headers:{'Api-User-Agent':'AeronautFlightSimulator/0.1 (local personal educational application)'}});
+        const response=await fetcher(wikiNearbyUrl(state.lat,state.lon,language),{signal:controller.signal,credentials:'omit',headers:{'Api-User-Agent':'FlyAtlasFlightSimulator/0.1 (local personal educational application)'}});
         if(!response.ok){const error=new Error('Nearby data unavailable');error.retry=Number(response.headers?.get('Retry-After'))||0;throw error;}
         const data=await response.json();if(token!==generation||!enabled||controller.signal.aborted)return;if(data.error)throw new Error('Nearby API unavailable');
         items.push(...wikiPoints(data,language));if(items.length>=8)break;

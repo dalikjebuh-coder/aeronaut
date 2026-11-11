@@ -67,5 +67,5 @@ test('long source strings fit the photo footer without dropping attribution',()=
   const lines=wrapPhotoText(context,text,90);
   assert(lines.every(line=>context.measureText(line).width<=90));
   assert.equal(lines.join('').replace(/\s/g,''),text.replace(/\s/g,''));
-  assert.equal(photoFilename(new Date(2026,9,15,13,5,9)),'aeronaut-2026-10-15_13-05-09.png');
+  assert.equal(photoFilename(new Date(2026,9,15,13,5,9)),'flyatlas-2026-10-15_13-05-09.png');
 });

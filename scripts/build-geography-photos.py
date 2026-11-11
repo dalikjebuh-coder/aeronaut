@@ -6,7 +6,7 @@ from html import unescape
 root=Path(__file__).resolve().parents[1]
 seeds=json.loads((root/'src/geography-places.json').read_text())
 target=root/'src/images/places';target.mkdir(exist_ok=True)
-headers={'User-Agent':'AeronautFlightSimulator/0.1 (local personal educational application)'}
+headers={'User-Agent':'FlyAtlasFlightSimulator/0.1 (local personal educational application)'}
 def get(url):
  for attempt in range(4):
   try:

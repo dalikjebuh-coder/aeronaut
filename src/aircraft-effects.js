@@ -25,6 +25,16 @@ export function aircraftEffectLevels(state){
   };
 }
 
+export function aircraftLightLevels(time,timeOfDay='day',reducedMotion=false){
+  const visibility=timeOfDay==='night'?1:timeOfDay==='evening'?0.55:timeOfDay==='morning'?0.2:0.12;
+  const phase=time%1.25;
+  return{
+    visibility,
+    strobe:reducedMotion?0.12:Number(phase<0.055||phase>0.14&&phase<0.19),
+    beacon:reducedMotion?0.2:Math.pow(Math.max(0,Math.sin(time*Math.PI*2)),14)
+  };
+}
+
 export class WakeHistory{
   constructor(lifetime=2.2,limit=64,interval=.045){this.lifetime=lifetime;this.limit=limit;this.interval=interval;this.reset();}
   reset(){this.samples=[];this.lastEmission=-Infinity;}
@@ -51,10 +61,18 @@ function propellerTexture(){
   context.fillStyle=gradient;context.fillRect(0,0,128,128);return canvas;
 }
 
-export function createAircraftEffects(viewer,getState,makeFrame,isVisible){
+function lightAnchors(anchors){
+  const tipOffset=Math.max(.25,anchors.radius*.015),upOffset=Math.max(.3,anchors.radius*.01);
+  const left=[anchors.wings[0][0]-tipOffset,anchors.wings[0][1],anchors.wings[0][2]+upOffset];
+  const right=[anchors.wings[1][0]+tipOffset,anchors.wings[1][1],anchors.wings[1][2]+upOffset];
+  return[left,right,[anchors.tail[0],anchors.tail[1],anchors.tail[2]+upOffset],left,right,[anchors.beacon[0],anchors.beacon[1],anchors.beacon[2]+upOffset]];
+}
+
+export function createAircraftEffects(viewer,getState,makeFrame,isVisible,getTimeOfDay=()=> 'day'){
   const C=window.Cesium;
   const ribbons=viewer.scene.primitives.add(new C.PolylineCollection());
   const sprites=viewer.scene.primitives.add(new C.BillboardCollection({scene:viewer.scene,blendOption:C.BlendOption.TRANSLUCENT}));
+  const lightPointsCollection=viewer.scene.primitives.add(new C.PointPrimitiveCollection());
   const texture=glowTexture();
   let model='highWing',anchors=EFFECT_ANCHORS.highWing,lastTime=NaN,angle=0,visualScale=1,destroyed=false;
   const tracks=[];
@@ -65,13 +83,19 @@ export function createAircraftEffects(viewer,getState,makeFrame,isVisible){
   }
   const addSprite=()=>sprites.add({show:false,image:texture,sizeInMeters:true,width:1,height:1,color:C.Color.WHITE});
   const flames=Array.from({length:2},()=>Array.from({length:16},addSprite));
-  const lights=Array.from({length:6},addSprite);
+  const lights=Array.from({length:6},(_,index)=>{
+    const flash=index===3||index===4;
+    return lightPointsCollection.add({show:false,pixelSize:flash||index===5?5:4,color:C.Color.WHITE,outlineColor:C.Color.WHITE,outlineWidth:flash?5:3});
+  });
+  const lightColors=[new C.Color(1,.08,.04,1),new C.Color(.08,1,.25,1),C.Color.WHITE,C.Color.WHITE,C.Color.WHITE,new C.Color(1,.12,.03,1)];
+  let lightPoints=lightAnchors(anchors);
   const reducedMotion=Boolean(window.matchMedia?.('(prefers-reduced-motion: reduce)').matches);
 
   function reset(){
     lastTime=NaN;angle=0;
     for(const track of tracks){track.history.reset();track.line.show=false;track.lastDrawTime=NaN;}
-    for(const sprite of [...flames.flat(),...lights])sprite.show=false;
+    for(const sprite of flames.flat())sprite.show=false;
+    for(const light of lights)light.show=false;
   }
   function drawTrack(track,anchor,side,level,frame,state){
     const time=state.elapsed,history=track.history;
@@ -108,7 +132,7 @@ export function createAircraftEffects(viewer,getState,makeFrame,isVisible){
   function update(){
     if(destroyed)return;
     const state=getState(),time=state.elapsed;
-    ribbons.show=sprites.show=Boolean(isVisible());
+    ribbons.show=sprites.show=lightPointsCollection.show=Boolean(isVisible());
     if(!Number.isFinite(time))return;
     if(time<lastTime||Number.isFinite(lastTime)&&time-lastTime>.3)reset();
     const dt=Number.isFinite(lastTime)?clamp(time-lastTime,0,.1):0;
@@ -130,30 +154,33 @@ export function createAircraftEffects(viewer,getState,makeFrame,isVisible){
         place(flames[index][i],point,radius,new C.Color(1,.3+.35*(1-t),.04+.2*(1-t),nozzle?levels.afterburner*(.95-.5*t)*flutter:0),frame);
       }
     }
-    const phase=time%1.25,strobe=reducedMotion ? .12 : (phase<.055||phase>.14&&phase<.19?1:0);
-    const beacon=reducedMotion ? .2 : Math.pow(Math.max(0,Math.sin(time*Math.PI*2)),14);
-    const lightSize=clamp(frame.metersPerPixel*1.7,.18,.5)/frame.scale;
-    place(lights[0],anchors.wings[0],lightSize,new C.Color(1,.08,.04,.85),frame);
-    place(lights[1],anchors.wings[1],lightSize,new C.Color(.08,1,.25,.85),frame);
-    place(lights[2],anchors.tail,lightSize,C.Color.WHITE.withAlpha(.65),frame);
-    place(lights[3],anchors.wings[0],lightSize*2.1,C.Color.WHITE.withAlpha(strobe*.8),frame);
-    place(lights[4],anchors.wings[1],lightSize*2.1,C.Color.WHITE.withAlpha(strobe*.8),frame);
-    place(lights[5],anchors.beacon,lightSize*1.6,new C.Color(1,.15,.03,beacon*.65),frame);
+    const {visibility,strobe,beacon}=aircraftLightLevels(time,getTimeOfDay(),reducedMotion);
+    for(let index=0;index<lights.length;index++){
+      const flash=index===3||index===4;
+      const strength=(index<2?.92:index===2?.65:flash?strobe*.95:beacon*.85)*visibility;
+      const light=lights[index],tint=lightColors[index];
+      light.show=strength>.01;
+      if(!light.show)continue;
+      light.position=frame.point(lightPoints[index]);
+      light.color=new C.Color(tint.red*strength,tint.green*strength,tint.blue*strength,1);
+      light.outlineColor=new C.Color(tint.red*strength,tint.green*strength,tint.blue*strength,.25);
+    }
   }
   const removeUpdate=viewer.scene.preUpdate.addEventListener(update);
   return{
-    // Cesium picks individual billboards and polylines, not their collections.
+    // Cesium picks individual billboards, polylines and points, not their collections.
     surfacePrimitives:[...tracks.map(track=>track.line),...flames.flat(),...lights],
     propellerTexture:propellerTexture(),
     get propellerAngle(){return angle;},
     get visualScale(){return visualScale;},
-    setModel(value){model=Object.hasOwn(EFFECT_ANCHORS,value)?value:'highWing';anchors=EFFECT_ANCHORS[model];reset();},
+    setModel(value){model=Object.hasOwn(EFFECT_ANCHORS,value)?value:'highWing';anchors=EFFECT_ANCHORS[model];lightPoints=lightAnchors(anchors);reset();},
     reset,
     destroy(){
       if(destroyed)return;destroyed=true;removeUpdate();
       if(viewer.scene.isDestroyed?.())return;
       if(!ribbons.isDestroyed())viewer.scene.primitives.remove(ribbons);
       if(!sprites.isDestroyed())viewer.scene.primitives.remove(sprites);
+      if(!lightPointsCollection.isDestroyed())viewer.scene.primitives.remove(lightPointsCollection);
     }
   };
 }

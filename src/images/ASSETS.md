@@ -1,4 +1,4 @@
-# Obrazové podklady menu Aeronaut / Brno
+# Obrazové podklady menu FlyAtlas / Brno
 
 Vytvořeno 2026-10-15. Hangáry a počasí byly vytvořeny vestavěným nástrojem `image_gen.imagegen` (nikoli CLI/API fallback). Jde o ilustrační fotorealistické vizualizace, ne fotografie skutečných modelů ze hry. Původní generované PNG zůstávají zachované v úložišti Codexu, vybrané optimalizované JPG jsou součástí projektu. Obrázky byly zkontrolovány vizuálně, pouze převedeny do JPG a zmenšeny pro web.
 

@@ -6,7 +6,7 @@ import {MISSIONS,getMission} from '../src/missions.js';
 
 function storage(){const values=new Map();return{getItem:key=>values.get(key)??null,setItem:(key,value)=>values.set(key,String(value)),key:index=>[...values.keys()][index]??null,get length(){return values.size;}};}
 
-test('HORIZONT has each active mission exactly once, and a safe finish opens the next flight',()=>{
+test('FlyAtlas has each active mission exactly once, and a safe finish opens the next flight',()=>{
   assert.equal(CAREER_IDS.length,28);assert.equal(new Set(CAREER_IDS).size,28);
   assert.deepEqual(new Set(CAREER_IDS),new Set(MISSIONS.map(mission=>mission.id)));
   assert.deepEqual(CHAPTERS.map(chapter=>chapter.ids.length),[5,6,6,6,5]);

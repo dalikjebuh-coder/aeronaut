@@ -68,7 +68,7 @@ export function syncGameMenu({running=false,busy=false,mode='google',hasToken=fa
   $('freeAtmosphere').hidden=race;$('missionConditionsNote').hidden=!race;$('missionCards').hidden=!race;
   $('missionBrowser').hidden=!race;
   $('freeFlightSetup').hidden=race;
-  $('missionModeCount').textContent=`HORIZONT · ${progress.careerCount} / ${progress.total}`;
+  $('missionModeCount').textContent=`FlyAtlas · ${progress.careerCount} / ${progress.total}`;
   $('missionCount').textContent=`${progress.completed.size} / ${MISSIONS.length} splněno`;
   const nextLesson=progress.nextMissionId&&getMission(progress.nextMissionId);
   $('missionListGuidance').textContent=nextLesson?`DALŠÍ LET · ${nextLesson.title}`:'Kariéra dokončena. Můžeš zlepšovat hvězdy a rekordy.';
@@ -80,13 +80,13 @@ export function syncGameMenu({running=false,busy=false,mode='google',hasToken=fa
   $('careerHeroAward').textContent=`DALŠÍ ODZNAK · ${activeChapter.award}`;
   const nextPhoto=nextLesson&&(MISSION_PHOTOS[nextLesson.id]||nextLesson.location);
   $('careerStage').style.setProperty('--career-image',`url("${nextPhoto?.image||activeChapter.image}")`);
-  $('careerStageNumber').textContent=nextLesson?`DALŠÍ LET · ${String(careerPosition(nextLesson.id)+1).padStart(2,'0')} / ${progress.total} · ${activeChapter.title}`:'HORIZONT · KARIÉRA DOKONČENA';
-  $('careerStageTitle').textContent=nextLesson?.title||'Šéfpilot HORIZONTU';
+  $('careerStageNumber').textContent=nextLesson?`DALŠÍ LET · ${String(careerPosition(nextLesson.id)+1).padStart(2,'0')} / ${progress.total} · ${activeChapter.title}`:'FlyAtlas · KARIÉRA DOKONČENA';
+  $('careerStageTitle').textContent=nextLesson?.title||'Šéfpilot FlyAtlasu';
   $('careerStageText').textContent=nextLesson?missionSituation(nextLesson.id):'Všechny kapitoly dokončeny. Můžeš se vrátit k oblíbeným letům.';
   const followingId=nextLesson&&CAREER_IDS.slice(careerPosition(nextLesson.id)+1).find(id=>!progress.completed.has(id));
   const following=followingId&&getMission(followingId);
   $('careerStageNextLabel').textContent=nextLesson?'PO DOKONČENÍ':'ZÍSKÁNO';
-  $('careerStageNext').textContent=following?.title||'Šéfpilot HORIZONTU';
+  $('careerStageNext').textContent=following?.title||'Šéfpilot FlyAtlasu';
   $('careerStageMeta').textContent=following?`${following.location.name} · ${following.route.activity||OBJECTIVE_NAMES[objectiveType(following.route)]}`:nextLesson?'Poslední kariérní let':`${progress.stars} / ${progress.maxStars} hvězd`;
   $('careerStageBriefing').hidden=!nextLesson;
   for(const button of document.querySelectorAll('[data-chapter]')){
@@ -176,7 +176,7 @@ export function syncGameMenu({running=false,busy=false,mode='google',hasToken=fa
   $('summaryPlace').textContent=mode==='demo'?'Offline trénink':place.name;$('summaryPlace').title=place.name;
   $('summaryTime').textContent=TIME_NAMES[$('timeOfDay').value];
   $('summaryWeather').textContent=WEATHER_NAMES[$('weather').value];
-  $('locationHeading').textContent=race?'HORIZONT':mode==='demo'?'Offline trénink':'Kam poletíš?';
+  $('locationHeading').textContent=race?'FlyAtlas':mode==='demo'?'Offline trénink':'Kam poletíš?';
   $('locationStepHint').textContent=race?'Pilotní kariéra · bezpečný dolet odemyká další misi.':mode==='demo'?'Trénink bez připojení k mapám.':'Vyber místo na globusu a nastav podmínky letu.';
   for(const button of document.querySelectorAll('[data-location]')){
     button.disabled=busy||running||mode==='demo'||race;
