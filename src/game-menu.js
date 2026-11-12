@@ -68,7 +68,7 @@ export function syncGameMenu({running=false,busy=false,mode='google',hasToken=fa
   $('freeAtmosphere').hidden=race;$('missionConditionsNote').hidden=!race;$('missionCards').hidden=!race;
   $('missionBrowser').hidden=!race;
   $('freeFlightSetup').hidden=race;
-  $('missionModeCount').textContent=`FlyAtlas · ${progress.careerCount} / ${progress.total}`;
+  $('missionModeCount').textContent=`Mise · ${progress.careerCount} / ${progress.total}`;
   $('missionCount').textContent=`${progress.completed.size} / ${MISSIONS.length} splněno`;
   const nextLesson=progress.nextMissionId&&getMission(progress.nextMissionId);
   $('missionListGuidance').textContent=nextLesson?`DALŠÍ LET · ${nextLesson.title}`:'Kariéra dokončena. Můžeš zlepšovat hvězdy a rekordy.';
