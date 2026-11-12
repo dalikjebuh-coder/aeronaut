@@ -25,6 +25,7 @@ import {achievementCollection,createAchievementGallery,recordCloudTurbulence,rec
 import {createWeatherEffects,cloudVolumeShader} from './weather-effects.js';
 import {installFlightUiLayout} from './flight-ui-layout.js';
 import {installMobileControls} from './mobile-controls.js';
+import {createLoadingScreen} from './loading-screen.js';
 const $=id=>document.getElementById(id);
 const C=window.Cesium;
 const engineAudio=createEngineAudio();
@@ -75,7 +76,10 @@ let inspectHeading=0,inspectElevation=.3,inspectDistance=110;
 let flightOrbit=null;
 const photo={active:false,clean:false,roll:0,savedFov:0,savedLabels:false,saving:false,drag:null,session:0,url:null};
 let startup={...DEMO_ORIGIN,altitude:600,heading:0};
-const loading=(text)=>{$('loading').hidden=!text;if(text){$('loading').querySelector('strong').textContent=text;$('loading').querySelector('p').textContent=mode==='google'?'Načítání online 3D map může chvíli trvat.':'Vytváření tréninkové krajiny';}};
+const loadingScreen=createLoadingScreen($('loading'),{initialMinimumMs:5000,reducedMotion:window.matchMedia?.('(prefers-reduced-motion: reduce)').matches});
+const loading=(text,progress)=>text
+  ?loadingScreen.show(text,{description:mode==='google'?'Načítání online 3D map může chvíli trvat.':'Vytváření tréninkové krajiny',...progress})
+  :loadingScreen.complete();
 function showError(text){$('formError').textContent=text;$('formError').hidden=!text;}
 function notice(text,duration=4000){clearTimeout(noticeTimer);delete $('notice').dataset.landing;$('notice').textContent=text;$('notice').hidden=false;noticeLock=performance.now()+duration;if(Number.isFinite(duration))noticeTimer=setTimeout(()=>{$('notice').hidden=true;},duration);}
 function withTimeout(promise,milliseconds,message){let timer;return Promise.race([promise,new Promise((_,reject)=>{timer=setTimeout(()=>{const error=new Error(message);error.code='TIMEOUT';reject(error);},milliseconds);})]).finally(()=>clearTimeout(timer));}
@@ -302,10 +306,11 @@ function setMode(next){
   if(next==='google'&&ionToken)prepareGoogle();
   else if(next==='google')notice('Pro skutečné lokality připoj mapy v nastavení.',4000);
 }
-async function prepareGoogle(){
+async function prepareGoogle({continueLoading=false}={}){
   if(!ionToken){openDialog('connectionDialog');return false;}
   if(tileset)return true;
   const token=++epoch;busy=true;syncControls();loading('Připojuji Google 3D…');
+  let ready=false;
   try{
     const resource=await withTimeout(C.IonResource.fromAssetId(2275207,{accessToken:ionToken}),30000,'Připojení k Cesium ion vypršelo.');
     const tilesPromise=C.Cesium3DTileset.fromUrl(resource,{maximumScreenSpaceError:12,cacheBytes:256*1024*1024,maximumCacheOverflowBytes:128*1024*1024,showCreditsOnScreen:true});
@@ -315,11 +320,11 @@ async function prepareGoogle(){
     if(token!==epoch){tiles.destroy();return false;}
     tileset=viewer.scene.primitives.add(tiles);tileset.show=mode==='google';
     tileset.tileFailed.addEventListener(()=>{if(mode==='google')notice('Část mapy se nepodařilo načíst. Zkontroluj připojení, kvótu Cesium ion a oprávnění tokenu.',7000);});
-    resetScene();overview();return true;
+    resetScene();overview();ready=true;return true;
   }catch(error){
     if(token===epoch)showError(googleLoadError(error));
     return false;
-  }finally{if(token===epoch){busy=false;loading(null);syncControls();}}
+  }finally{if(token===epoch){busy=false;if(!continueLoading||!ready)loading(null);syncControls();}}
 }
 async function startFlight(){
   if(busy)return;
@@ -329,33 +334,42 @@ async function startFlight(){
   if(isRace()&&mode!=='google'){showError('Mise vyžadují připojené Google 3D mapy.');return;}
   exitPhotoMode();
   engineAudio.unlock();
-  if(mode==='google'&&!(await prepareGoogle()))return;
+  if(mode==='google'&&!(await prepareGoogle({continueLoading:true})))return;
   const p=selection(),token=++epoch;
   busy=true;syncControls();if(running){paused=true;keys.clear();mobileControls.reset();}
+  const needsSurface=mode==='google';
+  const needsRoute=isRace()&&currentMission().route.terrainFollowing;
+  const needsGuide=isRace()&&objectiveType(race.route)==='sightseeing';
+  const total=1+Number(needsSurface)+Number(needsRoute)+Number(needsGuide);
+  let completed=0;
+  loading('Připravuji let…',{completed,total});
   let ground=mode==='demo'?demo.surface(p.lat,p.lon):undefined;
   if(mode==='google'){
-    loading('Zjišťuji výšku místa startu…');
+    loading('Zjišťuji výšku místa startu…',{completed,total});
     try{
       const result=await Promise.race([viewer.scene.sampleHeightMostDetailed([C.Cartographic.fromDegrees(p.lon,p.lat)],surfaceExclusions()),new Promise((_,reject)=>setTimeout(()=>reject(new Error('timeout')),20000))]);
       ground=result[0].height;
       if(!Number.isFinite(ground))throw new Error('No surface');
+      loading('Výška místa startu připravena',{completed:++completed,total});
     }catch{if(token===epoch){showError('Nepodařilo se načíst povrch zvoleného místa. Nech mapu chvíli načítat a zkus start znovu.');busy=false;loading(null);syncControls();if(running)pauseFlight(true);}return;}
   }
   if(token!==epoch)return;
-  if(isRace()&&currentMission().route.terrainFollowing){
-    loading('Připravuji výšky průletových bran…');
+  if(needsRoute){
+    loading('Připravuji výšky průletových bran…',{completed,total});
     try{
       const route=currentMission().route,points=routeSurfacePoints(route).map(point=>C.Cartographic.fromDegrees(point.lon,point.lat));
       const samples=await Promise.race([viewer.scene.sampleHeightMostDetailed(points,surfaceExclusions()),new Promise((_,reject)=>setTimeout(()=>reject(new Error('timeout')),15000))]);
       if(token!==epoch)return;
       const prepared=resolveRouteSurface(route,samples.map(point=>point.height));race.setRoute(prepared);raceView.setRoute(prepared);
+      loading('Trasa připravena',{completed:++completed,total});
     }catch{if(token===epoch){showError('Povrch trasy se nepodařilo načíst. Zkus start znovu nebo jiné místo; dostupnost 3D detailů závisí na pokrytí map.');busy=false;loading(null);syncControls();}return;}
   }
-  if(isRace()&&objectiveType(race.route)==='sightseeing'){
-    loading('Připravuji sbírku památek…');
+  if(needsGuide){
+    loading('Připravuji sbírku památek…',{completed,total});
     const ready=await geographyGuide.ready;
     if(token!==epoch)return;
     if(!ready){showError('Sbírku památek se nepodařilo načíst. Obnov stránku a zkus misi znovu.');busy=false;loading(null);return;}
+    loading('Sbírka památek připravena',{completed:++completed,total});
   }
   geographyGuide.setMissionPlaces(isRace()&&objectiveType(race.route)==='sightseeing'?race.route.gates.map(gate=>gate.placeId):[]);
   applyTimeOfDay(p);
@@ -375,7 +389,7 @@ async function startFlight(){
   viewer.scene.screenSpaceCameraController.enableInputs=false;viewer.camera.lookAtTransform(C.Matrix4.IDENTITY);aircraft.show=true;
   $('flightUI').hidden=false;setFlightMenuVisible(false);document.body.classList.remove('flight-paused');document.body.classList.add('flying','panel-hidden');
   
-  loading(null);syncControls();updateCamera();updateHUD();$('startButton').blur();notice(isRace()?missionBrief(race.route):'Jsi ve vzduchu. Šipkami řídíš, W / S mění výkon.',isRace()?9000:5000);
+  updateCamera();updateHUD();loading(null);syncControls();$('startButton').blur();notice(isRace()?missionBrief(race.route):'Jsi ve vzduchu. Šipkami řídíš, W / S mění výkon.',isRace()?9000:5000);
 }
 function updatePauseLocation(){
   const {lat,lon}=state;
@@ -642,9 +656,11 @@ function tick(now){
 function openDialog(id){if(running&&!paused)pauseFlight(true);keys.clear();mobileControls.reset();$(id).showModal();}
 async function init(){
   try{
+    loading('Spouštím 3D prostředí…',{completed:0,total:3,description:'Připravuji svět a hangár'});
     if(!C)throw new Error('Cesium missing');
     C.Ion.defaultAccessToken='';
     viewer=new C.Viewer('cesiumContainer',{scene3DOnly:true,baseLayer:false,baseLayerPicker:false,geocoder:false,animation:false,timeline:false,homeButton:false,sceneModePicker:false,navigationHelpButton:false,fullscreenButton:false,infoBox:false,selectionIndicator:false,shouldAnimate:false,skyBox:false,shadows:false,contextOptions:{webgl:{alpha:false}}});
+    loading('3D zobrazení připraveno',{completed:1,total:3,description:'Připravuji svět a hangár'});
     // skyBox:false also omits Cesium's default Sun primitive.
     viewer.scene.sun=new C.Sun();
     viewer.scene.sun.glowFactor=1.4;
@@ -654,7 +670,7 @@ async function init(){
     viewer.scene.globe.baseColor=C.Color.fromCssColorString('#7a9466');viewer.scene.globe.enableLighting=false;viewer.scene.globe.depthTestAgainstTerrain=true;
     viewer.scene.backgroundColor=C.Color.fromCssColorString('#a4c3ca');viewer.scene.fog.density=0.00012;viewer.resolutionScale=Math.min(devicePixelRatio,1.5)/devicePixelRatio;
     viewer.scene.skyAtmosphere.show=true;viewer.scene.screenSpaceCameraController.minimumZoomDistance=30;
-    viewer.scene.renderError.addEventListener(()=>{loading('3D zobrazení se zastavilo');$('loading').querySelector('p').textContent='Zkus obnovit stránku v prohlížeči s podporou WebGL. Pokud problém trvá, zavři ostatní 3D aplikace.';});
+    viewer.scene.renderError.addEventListener(()=>loadingScreen.fail('3D zobrazení se zastavilo','Zkus obnovit stránku v prohlížeči s podporou WebGL. Pokud problém trvá, zavři ostatní 3D aplikace.'));
     daylightTint=viewer.scene.postProcessStages.add(new C.PostProcessStage({
       name:'flyatlas_daylight',
       uniforms:{
@@ -821,6 +837,7 @@ async function init(){
     $('weather').onchange=()=>{try{localStorage.setItem(WEATHER_STORAGE_KEY,$('weather').value);}catch{}applyTimeOfDay();};
     raceView=createRaceView(viewer,race,()=>state);
     demo=createDemo(viewer);demo.boundary.show=false;aircraft=createAircraft(viewer,()=>state,()=>surfaceHeight,(lat,lon)=>mode==='demo'?viewer.scene.sampleHeight(C.Cartographic.fromDegrees(lon,lat),surfaceExclusions())??demo.surface(lat,lon):terrainSample(lat,lon),()=>$('timeOfDay').value);cityLabels=createCityLabels(viewer);
+    loading('Svět připraven',{completed:2,total:3,description:'Dokončuji přípravu menu'});
     crashEffect=createCrashEffect(viewer);
     geographyGuide=createGeographyGuide(viewer,{document,onPause:()=>{if(running&&!paused&&!crashed)pauseFlight(true);}});
     badgeGallery=createAchievementGallery(document,{onPause:()=>{if(running&&!paused&&!crashed)pauseFlight(true);}});
@@ -888,7 +905,7 @@ async function init(){
       missions:DISPLAY_MISSIONS,
       onMission:id=>chooseMission(id,{showBriefing:true,keepGlobeView:true}),onPoint:previewStart});
     initGameMenu(syncControls,chooseLocation,chooseMission);syncControls();loading(null);requestAnimationFrame(tick);if(ionToken)prepareGoogle();
-  }catch(error){console.error('FlyAtlas initialization failed:',error);loading('3D prostředí se nepodařilo spustit');$('loading').querySelector('p').textContent='Při spuštění nastala chyba. Obnov stránku; pokud se chyba opakuje, dej mi vědět. Podrobnosti jsou v konzoli prohlížeče.';$('loading').querySelector('.spinner').hidden=true;}
+  }catch(error){console.error('FlyAtlas initialization failed:',error);loadingScreen.fail('3D prostředí se nepodařilo spustit','Při spuštění nastala chyba. Obnov stránku; pokud se chyba opakuje, dej mi vědět. Podrobnosti jsou v konzoli prohlížeče.');}
 }
 $('demoMode').onclick=()=>{$('connectionDialog').close();setMode('demo');};$('googleMode').onclick=()=>{$('connectionDialog').close();setMode('google');};
 $('startButton').onclick=()=>{if(running)closeGameMenu();else if(menuStep<3)setMenuStep(menuStep+1);else if(isRace()&&!isMissionUnlocked(missionId))chooseMission(missionProgress().nextMissionId||'first-takeoff',{showBriefing:true});else if(mapDraft)confirmStartDraft();else startFlight();};$('resumeButton').onclick=()=>crashed?restart():pauseFlight(false);$('restartButton').onclick=restart;$('endButton').onclick=endFlight;$('soundButton').onclick=toggleSound;

@@ -1,0 +1,18 @@
+.horizon-ui header .brand-logo{
+  flex:0 0 auto;
+  height:100%;
+  display:flex;
+  align-items:center;
+  min-width:0;
+}
+.horizon-ui header .brand-logo img{
+  display:block;
+  width:clamp(112px,18vw,170px);
+  height:auto;
+  max-height:calc(100% - 16px);
+  object-fit:contain;
+}
+.horizon-ui.flying header .brand-logo img{width:110px}
+@media(max-width:600px){
+  .horizon-ui header .brand-logo img{width:112px}
+}

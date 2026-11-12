@@ -2,12 +2,12 @@
 <html lang="cs">
 <head>
   <meta charset="utf-8"><meta name="referrer" content="no-referrer-when-downgrade"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <title>FlyAtlas · Svět pod křídly</title>
-  <meta name="application-name" content="FlyAtlas">
-  <meta name="description" content="FlyAtlas: Vyber si letadlo, podmínky a místo na světě. Volný let a časovka ve 3D letecké hře.">
+  <title>FlyAtlas 2: Around the World</title>
+  <meta name="application-name" content="FlyAtlas 2: Around the World">
+  <meta name="description" content="FlyAtlas 2: Around the World. Vyber si letadlo, podmínky a místo na světě. Volný let a mise ve 3D letecké hře.">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23f3c969'/%3E%3Cpath d='M32 9 38 27 55 37 55 42 37 36 36 48 42 53 42 56 32 53 22 56 22 53 28 48 27 36 9 42 9 37 26 27Z' fill='%231d2522'/%3E%3C/svg%3E">
-  <link rel="preload" href="/images/hangar-highWing-v1.jpg" as="image">
-  <link rel="stylesheet" href="/vendor/Widgets/widgets.css"><link rel="stylesheet" href="/style.css"><link rel="stylesheet" href="/game-ui.css"><link rel="stylesheet" href="/horizon.css"><link rel="stylesheet" href="/free-flight.css"><link rel="stylesheet" href="/mission-selection.css"><link rel="stylesheet" href="/destination-globe.css"><link rel="stylesheet" href="/campaign.css"><link rel="stylesheet" href="/mobile-flight.css">
+  <link rel="preload" href="/images/hangar-highWing-v1.jpg" as="image"><link rel="preload" href="/images/flyatlas-2-original.png" as="image">
+  <link rel="stylesheet" href="/vendor/Widgets/widgets.css"><link rel="stylesheet" href="/style.css"><link rel="stylesheet" href="/game-ui.css"><link rel="stylesheet" href="/loading-screen.css"><link rel="stylesheet" href="/horizon.css"><link rel="stylesheet" href="/free-flight.css"><link rel="stylesheet" href="/mission-selection.css"><link rel="stylesheet" href="/destination-globe.css"><link rel="stylesheet" href="/campaign.css"><link rel="stylesheet" href="/mobile-flight.css"><link rel="stylesheet" href="/brand-logo.css">
   <script src="/config.js"></script>
   <script>window.CESIUM_BASE_URL='/vendor/';</script>
   <script src="/vendor/Cesium.js" defer></script><script src="/app.js" type="module"></script>
@@ -21,7 +21,7 @@
   <symbol id="arrow" viewBox="0 0 24 24"><path d="M4 12h16m-6-6 6 6-6 6"/></symbol>
   <symbol id="globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><ellipse cx="12" cy="12" rx="4" ry="9"/><path d="M3 12h18"/></symbol>
   <symbol id="free-flight" viewBox="0 0 48 48"><path d="M7 30c8-15 19-19 33-13M33 10l8 7-9 6M9 39h30"/></symbol><symbol id="timer" viewBox="0 0 48 48"><circle cx="24" cy="27" r="15"/><path d="M24 27l7-8M19 6h10M24 6v6M36 12l4 4"/></symbol></defs></svg>
-  <header><a class="brand" href="/" aria-label="FlyAtlas hlavní menu"><span class="brand-mark"><svg><use href="#plane"/></svg></span>FlyAtlas<span class="beta">FLIGHT</span></a><div class="header-middle">FLIGHT EXPERIENCE <span>///</span> 01</div><div class="header-actions"><button id="menuAtlasButton" class="quiet" disabled>Sbírka míst</button><button id="menuBadgesButton" class="quiet" disabled>Sbírka odznaků</button><button id="helpButton" class="quiet">Ovládání <kbd>?</kbd></button></div></header>
+  <header><a class="brand brand-logo" href="/" aria-label="FlyAtlas 2: Around the World — hlavní menu"><img src="/images/flyatlas-2-original.png" width="1364" height="504" alt=""></a><div class="header-middle">FLIGHT EXPERIENCE <span>///</span> 02</div><div class="header-actions"><button id="menuAtlasButton" class="quiet" disabled>Sbírka míst</button><button id="menuBadgesButton" class="quiet" disabled>Sbírka odznaků</button><button id="helpButton" class="quiet">Ovládání <kbd>?</kbd></button></div></header>
   <main>
     <aside id="sidebar" class="game-menu" aria-label="Příprava letu">
       <div class="menu-content"><nav class="setup-steps-nav" aria-label="Příprava letu"><button id="stepSetup" aria-current="step"><span>01</span> Letadlo</button><i>→</i><button id="stepGameType"><span>02</span> Režim</button><i>→</i><button id="stepLocation"><span>03</span> <b id="destinationStepLabel">Lokalita</b></button></nav><div id="setupStep">
@@ -159,7 +159,15 @@
     </aside>
     <section id="scene" aria-label="3D letecký simulátor">
       <div id="cesiumContainer"></div>
-      <div id="loading" class="loading"><span class="spinner"></span><strong>Připravuji horizont…</strong><p>Spouštění 3D prostředí</p></div>
+      <div id="loading" class="loading" role="status" aria-live="polite" aria-atomic="true">
+        <div class="loading-brand" aria-label="FlyAtlas 2: Around the World">
+          <span class="loading-orbit" aria-hidden="true"></span>
+          <img src="/images/flyatlas-2-original.png" width="1364" height="504" alt="FlyAtlas 2: Around the World — glóbus, letadlo a zlatá dvojka">
+          <span class="loading-gold-glow" aria-hidden="true"></span>
+        </div>
+        <strong>Připravuji horizont…</strong><p>Spouštění 3D prostředí</p>
+        <progress class="loading-progress" aria-label="Postup načítání"></progress>
+      </div>
       <div class="scene-top"><div class="location-badge"><span class="live-dot"></span><div><strong id="sceneTitle">Zelené údolí</strong><span id="sceneSubtitle">TRÉNINKOVÁ KRAJINA / SYNTETICKÁ</span></div></div><div class="scene-tools"><button id="panelButton" title="Menu · Esc" aria-label="Otevřít herní menu" aria-controls="pauseOverlay" aria-expanded="false"><svg aria-hidden="true"><use href="#menu-icon"/></svg></button><button id="fullscreenButton" title="Celá obrazovka" aria-label="Celá obrazovka">⛶</button></div></div>
       <div id="flightUI" hidden>
         <div class="compass"><span>SMĚR LETU</span><strong id="headingDisplay">000°</strong><div id="headingCardinal">SEVER</div></div>

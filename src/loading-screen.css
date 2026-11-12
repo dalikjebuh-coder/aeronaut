@@ -1,0 +1,89 @@
+.horizon-ui .loading{
+  z-index:30;
+  gap:8px;
+  background:radial-gradient(ellipse at 44% 42%,#18394b 0%,#0b1c2b 55%,#07111c 100%);
+  color:#e9f2f5;
+  transition:opacity .18s ease;
+}
+.loading.is-leaving{opacity:0;pointer-events:none}
+.loading-brand{
+  position:relative;
+  width:min(900px,90vw,121.7vh);
+  aspect-ratio:341/126;
+  margin-bottom:3px;
+  isolation:isolate;
+  animation:loading-appear .5s ease-out both;
+}
+.loading.is-entering .loading-brand{animation:loading-appear .5s ease-out both}
+.loading-brand img{display:block;width:100%;height:100%;object-fit:contain;position:relative;z-index:1}
+.loading-orbit{
+  position:absolute;
+  z-index:0;
+  left:27%;top:50%;width:46%;aspect-ratio:1;
+  border:1px solid #a8dfe144;
+  border-radius:50%;
+  transform:translateY(-50%) rotate(-17deg) scaleY(.53);
+  pointer-events:none;
+}
+.loading-orbit::after{
+  content:"";
+  position:absolute;
+  inset:-2px;
+  border:3px solid transparent;
+  border-top-color:#ffe5a8;
+  border-right-color:#f1cf8266;
+  border-radius:50%;
+  background:radial-gradient(circle 5px at 50% 0%,#fff1bd 0%,#f2cf75 60%,transparent 100%);
+  filter:drop-shadow(0 0 7px #f2cf75);
+  animation:loading-orbit 3.8s linear infinite;
+}
+.loading-gold-glow{
+  position:absolute;
+  z-index:2;
+  left:80.5%;top:24%;width:18%;height:48%;
+  border-radius:50%;
+  background:radial-gradient(ellipse,#fff0bd7d 0%,#f1bb4652 35%,transparent 74%);
+  filter:blur(10px);
+  pointer-events:none;
+  animation:loading-gold 3.2s ease-in-out infinite;
+}
+.horizon-ui .loading>strong{font-size:clamp(17px,2.1vw,24px);margin-top:-2px}
+.horizon-ui .loading>p{font-size:clamp(12px,1.3vw,16px);margin:0 0 12px;color:#a6bdca}
+.loading-progress{
+  display:block;
+  width:min(380px,72vw);
+  height:3px;
+  border:0;
+  border-radius:3px;
+  overflow:hidden;
+  appearance:none;
+  color:#f1cf82;
+  background:#7291a43d;
+  accent-color:#f1cf82;
+}
+.loading-progress::-webkit-progress-bar{background:#7291a43d;border-radius:3px}
+.loading-progress::-webkit-progress-value{background:linear-gradient(90deg,#a7d5e0,#f1cf82);border-radius:3px;transition:width .2s ease}
+.loading-progress::-moz-progress-bar{background:linear-gradient(90deg,#a7d5e0,#f1cf82);border-radius:3px}
+.loading-progress:not([value])::-webkit-progress-bar{
+  background:linear-gradient(90deg,#7291a43d 0 35%,#f1cf82 50%,#7291a43d 65%);
+  background-size:200% 100%;
+  animation:loading-wait 1.7s linear infinite;
+}
+.loading.is-error .loading-orbit::after,.loading.is-error .loading-gold-glow{animation:none}
+@keyframes loading-appear{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
+@keyframes loading-orbit{to{transform:rotate(360deg)}}
+@keyframes loading-gold{0%,70%,100%{opacity:.12}82%{opacity:.52}}
+@keyframes loading-wait{to{background-position:-200% 0}}
+@media(max-width:700px){
+  .loading-brand{width:min(92vw,550px,97vh)}
+  .loading-orbit::after,.loading-gold-glow{animation:none}
+  .loading-orbit::after{opacity:.6}
+  .loading-gold-glow{opacity:.15}
+  .loading-progress:not([value])::-webkit-progress-bar{animation-duration:3s}
+}
+@media(prefers-reduced-motion:reduce){
+  .horizon-ui .loading,.loading-brand,.loading.is-entering .loading-brand,
+  .loading-orbit::after,.loading-gold-glow,.loading-progress:not([value])::-webkit-progress-bar{
+    animation:none!important;transition:none!important;
+  }
+}
