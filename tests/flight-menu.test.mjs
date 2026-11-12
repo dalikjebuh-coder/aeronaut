@@ -75,11 +75,11 @@ test('menu icon and Esc share pause behavior; P and automatic pause leave settin
     engineAudio:{pause:()=>events.push('pause'),play:()=>events.push('play')},
     missionRadio:{stop:()=>events.push('radio stopped')},
     aircraft:{show:true,chaseDistance:48},updatePauseLocation:()=>{},updateCamera:()=>{},
-    exitPhotoMode:()=>{vm.runInContext('photo.active=false',context);events.push('exit photo');}
+    mobileControls:{reset:()=>{}},exitPhotoMode:()=>{vm.runInContext('photo.active=false',context);events.push('exit photo');}
   });
   vm.runInContext(`
     let running=true,paused=false,crashed=false,mapDraft=null,menuStep=3,busy=false;
-    const photo={active:false,drag:null},state={heading:40},keys=new Set(),touch=new Set();
+    const photo={active:false,drag:null},state={heading:40},keys=new Set();
     let inspectHeading,inspectElevation,inspectDistance;
   `+app.slice(app.indexOf('function setFlightMenuVisible('),app.indexOf('function syncPhotoControls('))+
     app.slice(app.indexOf("window.addEventListener('keydown'"),app.indexOf("window.addEventListener('keyup'")),context);
@@ -139,11 +139,11 @@ test('Do menu ends live, paused, crashed and photo flights and restores the firs
       viewer:{camera:{frustum:{fov:1}},scene:{screenSpaceCameraController:{enableInputs:false}},resize:()=>{}},
       aircraft:{show:true},updateCamera:()=>{},overview:()=>events.push('overview'),
       restart:()=>{},toggleSound:()=>{},setFlightMenuVisible:visible=>{$('pauseOverlay').hidden=!visible;},
-      updateLandingNotice:()=>{}
+      updateLandingNotice:()=>{},mobileControls:{power:new Set(['powerUp']),reset(){this.power.clear();}}
     });
     vm.runInContext(`
       let menuStep=3,running=true,paused=scenario==='paused'||scenario==='photo',crashed=scenario==='crashed',flightOrbit={};
-      const state={},keys=new Set(['KeyW']),touch=new Set(['left']);
+      const state={},keys=new Set(['KeyW']);
       const photo={active:scenario==='photo',session:0,savedFov:.8,savedLabels:true,drag:{id:7}};
       function syncControls(){events.push({running,paused,menuStep});}
     `+app.slice(app.indexOf('function stopInspectDrag(){'),app.indexOf('function pauseFlight('))+
@@ -153,7 +153,7 @@ test('Do menu ends live, paused, crashed and photo flights and restores the firs
     $('endButton').onclick();
     assert.equal(vm.runInContext('running||paused||crashed',context),false,scenario);
     assert.equal(vm.runInContext('menuStep',context),1,scenario);
-    assert.equal(vm.runInContext('keys.size+touch.size',context),0,scenario);
+    assert.equal(vm.runInContext('keys.size+mobileControls.power.size',context),0,scenario);
     assert.equal(vm.runInContext('photo.active',context),false,scenario);
     assert.equal(vm.runInContext('flightOrbit',context),null,scenario);
     assert.equal(vm.runInContext('aircraft.show',context),false,scenario);

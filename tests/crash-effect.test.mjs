@@ -85,11 +85,11 @@ test('a game crash freezes the aircraft, plays one explosion and reveals its rea
   const $=id=>{if(!elements.has(id))elements.set(id,{hidden:false,classList:{add(){}}});return elements.get(id);};
   const context=vm.createContext({$,isRace:()=>false,stopInspectDrag(){},updatePauseLocation(){},setFlightMenuVisible:value=>menus.push(value),
     engineAudio:{pause:()=>effects.push('pause'),explosion:()=>effects.push('sound')},aircraft:{show:true,chaseDistance:65,resetEffects:()=>resets++},
-    missionRadio:{stop(){}},
+    missionRadio:{stop(){}},mobileControls:{reset(){}},
     crashEffect:{play:options=>{effects.push('burst');ready=options.onReady;}}
   });
   const app=fs.readFileSync(new URL('../src/app.js',import.meta.url),'utf8');
-  vm.runInContext(`let running=true,paused=false,crashed=false,surfaceHeight=100;const keys=new Set(),touch=new Set(),state={lat:49,lon:16,altitude:103};`+
+  vm.runInContext(`let running=true,paused=false,crashed=false,surfaceHeight=100;const keys=new Set(),state={lat:49,lon:16,altitude:103};`+
     app.slice(app.indexOf('function crash(reason){'),app.indexOf('function surfaceExclusions(){')),context);
   vm.runInContext("crash('Tvrdé dosednutí');crash('Podruhé');",context);
   assert.deepEqual(effects,['pause','sound','burst']);assert.equal(resets,1);

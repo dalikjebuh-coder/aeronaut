@@ -24,6 +24,7 @@ import {createGeographyGuide} from './geography-guide.js';
 import {achievementCollection,createAchievementGallery,recordCloudTurbulence,recordEngineOutCompletion} from './achievements.js';
 import {createWeatherEffects,cloudVolumeShader} from './weather-effects.js';
 import {installFlightUiLayout} from './flight-ui-layout.js';
+import {installMobileControls} from './mobile-controls.js';
 const $=id=>document.getElementById(id);
 const C=window.Cesium;
 const engineAudio=createEngineAudio();
@@ -64,7 +65,8 @@ let menuStep=1,locationKey='brno',customLocation=null,mapDraft=null;
 const randomStartPlaces=[...new Map([...MISSIONS.map(mission=>mission.location),...LOCATIONS].map(place=>[place.name,place])).values()];
 const RADAR_RANGE=20000;
 let viewer,demo,aircraft,cityLabels,tileset,mode='google',ionToken=window.FLYATLAS_CONFIG?.cesiumIonToken||readSavedToken(),state=initialFlight({...DEMO_ORIGIN}),origin={...DEMO_ORIGIN},running=false,paused=false,crashed=false,busy=false,epoch=0;
-let keys=new Set(),touch=new Set(),lastFrame=0,lastHud=0,lastLabels=0,lastSurface=0,surfaceHeight=0,surfaceFlat=false,trail=[],lastTrail=0,noticeTimer,noticeLock=0;
+let keys=new Set(),lastFrame=0,lastHud=0,lastLabels=0,lastSurface=0,surfaceHeight=0,surfaceFlat=false,trail=[],lastTrail=0,noticeTimer,noticeLock=0;
+const mobileControls=installMobileControls({joystick:$('flightJoystick'),thumb:$('flightJoystickThumb'),buttons:document.querySelectorAll('.flight-throttle button'),enabled:()=>running&&!paused&&!crashed&&!busy});
 let cameraMotion=!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches,lastStallBeep=-Infinity;
 try{const saved=localStorage.getItem('aeronaut.cameraMotion');if(saved!==null)cameraMotion=saved==='true';}catch{}
 let flightCameraMode='chase';
@@ -285,11 +287,11 @@ function endFlight(){
   $('missionResult').hidden=true;
   geographyGuide?.setMissionPlaces?.([]);
   stopInspectDrag();flightOrbit=null;exitPhotoMode();$('flightWarning').hidden=true;
-  menuStep=1;running=false;paused=false;crashed=false;updateLandingNotice();keys.clear();touch.clear();$('flightUI').hidden=true;setFlightMenuVisible(false);
+  menuStep=1;running=false;paused=false;crashed=false;updateLandingNotice();keys.clear();mobileControls.reset();$('flightUI').hidden=true;setFlightMenuVisible(false);
   $('pauseOverlay').classList.remove('crashed');
   engineAudio.stop();
   missionRadio.stop();
-  document.body.classList.remove('flying','panel-hidden');if(aircraft)aircraft.show=false;
+  document.body.classList.remove('flying','panel-hidden','flight-paused');if(aircraft)aircraft.show=false;
   if(viewer)viewer.scene.screenSpaceCameraController.enableInputs=true;
   syncControls();overview();
 }
@@ -329,7 +331,7 @@ async function startFlight(){
   engineAudio.unlock();
   if(mode==='google'&&!(await prepareGoogle()))return;
   const p=selection(),token=++epoch;
-  busy=true;syncControls();if(running){paused=true;keys.clear();touch.clear();}
+  busy=true;syncControls();if(running){paused=true;keys.clear();mobileControls.reset();}
   let ground=mode==='demo'?demo.surface(p.lat,p.lon):undefined;
   if(mode==='google'){
     loading('Zjišťuji výšku místa startu…');
@@ -365,13 +367,13 @@ async function startFlight(){
     startup.wind=race.route.wind||null;startup.engineLimit=race.route.engineLimit??1;
     startup.gustStrength=race.route.gustStrength??0;
   }
-  state=initialFlight(startup);aircraft.resetEffects();surfaceHeight=ground;surfaceFlat=false;trail=[];lastTrail=0;lastSurface=0;running=true;paused=false;crashed=false;busy=false;keys.clear();touch.clear();
+  state=initialFlight(startup);aircraft.resetEffects();surfaceHeight=ground;surfaceFlat=false;trail=[];lastTrail=0;lastSurface=0;running=true;paused=false;crashed=false;busy=false;keys.clear();mobileControls.reset();
   resetRace();
   $('pauseOverlay').classList.remove('crashed');
   engineAudio.setThrottle(state.enginePower,state.speed);engineAudio.play();
   missionRadio.play();
   viewer.scene.screenSpaceCameraController.enableInputs=false;viewer.camera.lookAtTransform(C.Matrix4.IDENTITY);aircraft.show=true;
-  $('flightUI').hidden=false;setFlightMenuVisible(false);document.body.classList.add('flying','panel-hidden');
+  $('flightUI').hidden=false;setFlightMenuVisible(false);document.body.classList.remove('flight-paused');document.body.classList.add('flying','panel-hidden');
   
   loading(null);syncControls();updateCamera();updateHUD();$('startButton').blur();notice(isRace()?missionBrief(race.route):'Jsi ve vzduchu. Šipkami řídíš, W / S mění výkon.',isRace()?9000:5000);
 }
@@ -404,11 +406,11 @@ function stopInspectDrag(){
   if(drag&&container.hasPointerCapture(drag.id))container.releasePointerCapture(drag.id);
 }
 function pauseFlight(value=!paused,keepRadio=false){
-  if(!running||crashed)return;stopInspectDrag();if(!value)exitPhotoMode();paused=value;keys.clear();touch.clear();if(!paused)setFlightMenuVisible(false);$('pauseHint').hidden=!paused||!$('pauseOverlay').hidden;
+  if(!running||crashed)return;stopInspectDrag();if(!value)exitPhotoMode();paused=value;document.body.classList.toggle('flight-paused',paused);keys.clear();mobileControls.reset();if(!paused)setFlightMenuVisible(false);$('pauseHint').hidden=!paused||!$('pauseOverlay').hidden;
   $('flightWarning').hidden=true;
   if(paused){engineAudio.pause();if(!keepRadio)missionRadio.stop();}else engineAudio.play();
   $('pauseOverlay').classList.remove('crashed');
-  $('pauseTitle').textContent='Let pozastaven';$('pauseText').textContent='Tažením myši se rozhlédni, kolečkem přibližuj.';$('pauseEyebrow').textContent='HERNÍ MENU';$('resumeButton').innerHTML='Pokračovat v letu <kbd>Esc</kbd>';
+  $('pauseTitle').textContent='Let pozastaven';$('pauseText').textContent=window.matchMedia?.('(hover:none) and (pointer:coarse) and (max-width:680px), (hover:none) and (pointer:coarse) and (max-width:1100px) and (max-height:600px)').matches?'Klepnutím na tlačítko pokračuj v letu.':'Tažením myši se rozhlédni, kolečkem přibližuj.';$('pauseEyebrow').textContent='HERNÍ MENU';$('resumeButton').innerHTML='Pokračovat v letu <kbd>Esc</kbd>';
   if(paused){updatePauseLocation();inspectHeading=state.heading;inspectElevation=.3;inspectDistance=Math.max(110,(aircraft.chaseDistance||48)*2);aircraft.show=true;}
   else aircraft.show=true;
   updateCamera();
@@ -475,7 +477,7 @@ function crash(reason){
   if(crashed)return;
   stopInspectDrag();
   if(isRace())race.fail();
-  paused=true;crashed=true;$('pauseHint').hidden=true;engineAudio.pause();missionRadio.stop();keys.clear();touch.clear();setFlightMenuVisible(false);$('pauseOverlay').classList.add('crashed');$('pauseEyebrow').textContent='ZPÁTKY NA ZEMI';$('pauseTitle').textContent='Kontakt s povrchem';$('pauseText').textContent='Další pokus začíná zase bezpečně ve vzduchu.';$('resumeButton').textContent='Zkusit let znovu';
+  paused=true;crashed=true;$('pauseHint').hidden=true;engineAudio.pause();missionRadio.stop();keys.clear();mobileControls.reset();setFlightMenuVisible(false);$('pauseOverlay').classList.add('crashed');$('pauseEyebrow').textContent='ZPÁTKY NA ZEMI';$('pauseTitle').textContent='Kontakt s povrchem';$('pauseText').textContent='Další pokus začíná zase bezpečně ve vzduchu.';$('resumeButton').textContent='Zkusit let znovu';
   $('flightWarning').hidden=true;updatePauseLocation();
   if(reason)$('pauseText').textContent=reason;
   aircraft.show=false;aircraft.resetEffects();
@@ -611,7 +613,7 @@ function updateFlightFeedback(){
     engineAudio.stallWarning();lastStallBeep=state.elapsed;
   }
 }
-function input(){return{roll:Number(keys.has('ArrowRight')||keys.has('KeyD')||touch.has('right'))-Number(keys.has('ArrowLeft')||keys.has('KeyA')||touch.has('left')),pitch:Number(keys.has('ArrowDown')||touch.has('pitchUp'))-Number(keys.has('ArrowUp')||touch.has('pitchDown')),throttle:Number(keys.has('KeyW')||touch.has('powerUp'))-Number(keys.has('KeyS')||touch.has('powerDown'))};}
+function input(){return{roll:Math.max(-1,Math.min(1,Number(keys.has('ArrowRight')||keys.has('KeyD'))-Number(keys.has('ArrowLeft')||keys.has('KeyA'))+mobileControls.axes.roll)),pitch:Math.max(-1,Math.min(1,Number(keys.has('ArrowDown'))-Number(keys.has('ArrowUp'))+mobileControls.axes.pitch)),throttle:Number(keys.has('KeyW')||mobileControls.power.has('powerUp'))-Number(keys.has('KeyS')||mobileControls.power.has('powerDown'))};}
 function tick(now){
   const dt=lastFrame?(now-lastFrame)/1000:0;lastFrame=now;
   if(running&&!paused&&!busy){
@@ -637,7 +639,7 @@ function tick(now){
   geographyGuide?.update(state,{active:running&&mode==='google',paused:paused||busy||crashed,ground:surfaceHeight,auto:true,visible:!photo.active&&document.body.classList.contains('panel-hidden')});
   requestAnimationFrame(tick);
 }
-function openDialog(id){if(running&&!paused)pauseFlight(true);keys.clear();touch.clear();$(id).showModal();}
+function openDialog(id){if(running&&!paused)pauseFlight(true);keys.clear();mobileControls.reset();$(id).showModal();}
 async function init(){
   try{
     if(!C)throw new Error('Cesium missing');
@@ -1040,8 +1042,8 @@ window.addEventListener('keydown',event=>{
   if(!paused)keys.add(code);
 });
 window.addEventListener('keyup',event=>keys.delete(event.code));
-window.addEventListener('blur',()=>{stopInspectDrag();keys.clear();touch.clear();if(running&&!paused)pauseFlight(true);});
+window.addEventListener('blur',()=>{stopInspectDrag();keys.clear();mobileControls.reset();if(running&&!paused)pauseFlight(true);});
 document.addEventListener('visibilitychange',()=>{if(document.hidden){stopInspectDrag();if(running&&!paused)pauseFlight(true);}});
-document.querySelectorAll('[data-control]').forEach(button=>{button.addEventListener('pointerdown',event=>{event.preventDefault();button.setPointerCapture(event.pointerId);if(!paused)touch.add(button.dataset.control);});for(const name of ['pointerup','pointercancel','lostpointercapture'])button.addEventListener(name,()=>touch.delete(button.dataset.control));});
+window.addEventListener('orientationchange',()=>mobileControls.reset());
 // Modules can run before a deferred vendor script in some hosts; initialize after load.
 if(document.readyState==='complete')init();else window.addEventListener('load',init,{once:true});
